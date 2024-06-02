@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Database } from 'src/database/database.service';
-import { CreateRestauranteDTO } from './dtos/CreateRestauranteDTO';
-import { ResultSetHeader } from 'mysql2';
+import { CreateRestauranteDTO } from './dtos/create-restaurante.dto';
+import { RestauranteRepository } from './restaurante.repository';
+import { AppException, ExceptionType } from 'src/core/exception.core';
+import { Cep } from '../cep/cep.entity';
+import { CepService } from '../cep/cep.service';
+import { UpdateRestauranteDTO } from './dtos/update-restaurate.dto';
+import { Transaction } from 'src/decorators/transaction.decorator';
 
 export interface CepRow {
   cep: string;
@@ -25,72 +29,99 @@ export interface RestauranteRow {
 
 @Injectable()
 export class RestauranteService {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly repository: RestauranteRepository,
+    private readonly cepService: CepService,
+  ) {}
 
+  @Transaction()
   async create(data: CreateRestauranteDTO) {
-    const transaction = await this.db.transaction();
+    await this.checkExistingDominio(data.dominio);
 
-    try {
-      const existingDomain = await transaction.query<RestauranteRow[]>(
-        `
-        SELECT *
-        FROM restaurante r
-        WHERE dominio = :dominio
-      `,
-        data,
-      );
+    const cep = await this.cepService.createIfNotExists(data.cep);
 
-      if (existingDomain.length) {
-        throw new Error(`Restaurante com o domínio ${data.dominio} já existe!`);
-      }
+    const result = await this.repository.insert({
+      ...data,
+      cep,
+    });
 
-      const [cep] = await transaction.query<CepRow[]>(
-        `
-        SELECT *
-        FROM cep c
-        WHERE c.cep = :cep;
-      `,
-        data,
-      );
-
-      if (!cep) {
-        await transaction.query<ResultSetHeader>(
-          `
-          INSERT INTO cep (cep, estado, cidade, bairro)
-          VALUES (:cep, :cidade, :estado, :bairro)
-        `,
-          data,
-        );
-      }
-
-      const result = await transaction.query<ResultSetHeader>(
-        `
-          INSERT INTO restaurante (nome, rua, numero, cep, complemento, dominio, logo_url, qt_pedidos_fidelidade, valor_fidelidade)
-          VALUES (:nome, :rua, :numero, :cep, :complemento, :dominio, :logo_url, :qt_pedidos_fidelidade, :valor_fidelidade)
-        `,
-        data,
-      );
-
-      transaction.finish();
-
-      return {
-        ...data,
-        id: result.insertId,
-      };
-    } catch (e) {
-      transaction.query('ROLLBACK;');
-
-      throw e;
-    }
+    return {
+      ...data,
+      cep,
+      id: result.insertId,
+    };
   }
 
   async list() {
-    const restaurantes = await this.db.query<RestauranteRow & CepRow>(`
-      SELECT *
-      FROM restaurante r
-      LEFT JOIN cep c ON r.cep = c.cep
-    `);
+    const restaurantes = await this.repository.getAll();
 
     return restaurantes;
+  }
+
+  async getById(id: number) {
+    const restaurante = await this.repository.getById(id);
+
+    if (!restaurante) {
+      throw new AppException(
+        `Restaurante com id ${id} não encontrado`,
+        ExceptionType.DATA_NOT_FOUND,
+      );
+    }
+
+    return restaurante;
+  }
+
+  async getByDominio(dominio: string) {
+    const restaurante = await this.repository.getByDominio(dominio);
+
+    if (!restaurante) {
+      throw new AppException(
+        `Restaurante com domínio ${dominio} não encontrado`,
+        ExceptionType.DATA_NOT_FOUND,
+      );
+    }
+
+    return restaurante;
+  }
+
+  @Transaction()
+  async updateById(id: number, data: UpdateRestauranteDTO) {
+    const restaurante = await this.getById(id);
+
+    if (data.dominio && data.dominio !== restaurante.dominio) {
+      await this.checkExistingDominio(data.dominio);
+    }
+
+    let cep: Cep | undefined = undefined;
+
+    if (data.cep && data.cep !== restaurante.cep.cep) {
+      cep = await this.cepService.createIfNotExists(data.cep);
+    }
+
+    await this.repository.updateById(restaurante.id, {
+      ...data,
+      cep,
+    });
+
+    return {
+      ...restaurante,
+      ...data,
+      cep: cep || restaurante.cep,
+    };
+  }
+
+  async deleteById(id: number) {
+    await this.repository.deleteById(id);
+  }
+
+  private async checkExistingDominio(dominio: string) {
+    const existingDominio = await this.repository.getByDominio(dominio);
+
+    if (existingDominio) {
+      throw new AppException(
+        `Restaurante já existente com o domínio ${dominio}!`,
+        ExceptionType.DATA_ALREADY_EXISTS,
+      );
+    }
   }
 }
