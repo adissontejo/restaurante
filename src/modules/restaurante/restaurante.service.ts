@@ -2,58 +2,45 @@ import { Injectable } from '@nestjs/common';
 import { CreateRestauranteDTO } from './dtos/create-restaurante.dto';
 import { RestauranteRepository } from './restaurante.repository';
 import { AppException, ExceptionType } from 'src/core/exception.core';
-import { Cep } from '../cep/cep.entity';
 import { CepService } from '../cep/cep.service';
 import { UpdateRestauranteDTO } from './dtos/update-restaurate.dto';
 import { Transaction } from 'src/decorators/transaction.decorator';
-
-export interface CepRow {
-  cep: string;
-  estado: string;
-  cidade: string;
-  bairro: string;
-}
-
-export interface RestauranteRow {
-  id: string;
-  nome: string;
-  rua: string;
-  numero: number;
-  cep: string;
-  complemento?: string;
-  dominio: string;
-  logo_url?: string;
-  qt_pedidos_fidelidade?: number;
-  valor_fidelidade?: number;
-}
+import { HorarioRestauranteService } from '../horario-restaurante/horario-restaurante.service';
+import { RestauranteMapper } from './mappers/restaurante.mapper';
+import { RestauranteWithRelations } from './restaurante.entity';
 
 @Injectable()
 export class RestauranteService {
   constructor(
     private readonly repository: RestauranteRepository,
     private readonly cepService: CepService,
+    private readonly horariosRestauranteService: HorarioRestauranteService,
   ) {}
 
   @Transaction()
-  async create(data: CreateRestauranteDTO) {
+  async create(data: CreateRestauranteDTO): Promise<RestauranteWithRelations> {
     await this.checkExistingDominio(data.dominio);
 
+    const createData = RestauranteMapper.fromCreateDTOToEntity(data);
     const cep = await this.cepService.createIfNotExists(data.cep);
+    const result = await this.repository.insert(createData);
 
-    const result = await this.repository.insert({
-      ...data,
-      cep,
-    });
+    const horarios =
+      await this.horariosRestauranteService.unsafeSetHorariosForRestaurante(
+        result.insertId,
+        data.horarios,
+      );
 
     return {
-      ...data,
-      cep,
+      ...createData,
       id: result.insertId,
+      cep,
+      horarios,
     };
   }
 
   async list() {
-    const restaurantes = await this.repository.getAll();
+    const restaurantes = await this.repository.findAll();
 
     return restaurantes;
   }
@@ -85,28 +72,40 @@ export class RestauranteService {
   }
 
   @Transaction()
-  async updateById(id: number, data: UpdateRestauranteDTO) {
+  async updateById(
+    id: number,
+    data: UpdateRestauranteDTO,
+  ): Promise<RestauranteWithRelations> {
     const restaurante = await this.getById(id);
+    const updateData = RestauranteMapper.fromUpdateDTOToEntity(data);
 
     if (data.dominio && data.dominio !== restaurante.dominio) {
       await this.checkExistingDominio(data.dominio);
     }
 
-    let cep: Cep | undefined = undefined;
+    let cep = restaurante.cep;
 
     if (data.cep && data.cep !== restaurante.cep.cep) {
       cep = await this.cepService.createIfNotExists(data.cep);
     }
 
-    await this.repository.updateById(restaurante.id, {
-      ...data,
-      cep,
-    });
+    await this.repository.updateById(restaurante.id, updateData);
+
+    let horarios = restaurante.horarios;
+
+    if (data.horarios) {
+      horarios =
+        await this.horariosRestauranteService.unsafeSetHorariosForRestaurante(
+          id,
+          data.horarios,
+        );
+    }
 
     return {
       ...restaurante,
-      ...data,
-      cep: cep || restaurante.cep,
+      ...updateData,
+      cep,
+      horarios,
     };
   }
 

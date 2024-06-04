@@ -1,118 +1,103 @@
 import { Injectable } from '@nestjs/common';
-import { Restaurante } from './restaurante.entity';
-import { CepRow } from '../cep/cep.repository';
-import { RestauranteMapper } from './restaurante.mapper';
-import { generateInsertBody, generateUpdateSetters } from 'src/utils/sql';
+import {
+  generateInsertBody,
+  generateUpdateSetters,
+  inject,
+} from 'src/utils/sql';
 import { Database } from 'src/database/database.service';
-
-export interface RestauranteRow {
-  id: number;
-  nome: string;
-  rua: string;
-  numero: number;
-  cep: string;
-  complemento?: string;
-  dominio: string;
-  logo_url?: string;
-  qt_pedidos_fidelidade?: number;
-  valor_fidelidade?: number;
-}
+import { groupArray } from 'src/utils/array';
+import { Cep } from '../cep/cep.entity';
+import { HorarioRestaurante } from '../horario-restaurante/horario-restaurante.entity';
+import { Restaurante, RestauranteWithRelations } from './restaurante.entity';
 
 @Injectable()
 export class RestauranteRepository {
   constructor(private readonly db: Database) {}
 
   async insert(restaurante: Omit<Restaurante, 'id'>) {
-    const row = RestauranteMapper.fromEntityToRow(restaurante);
-
-    const result = await this.db.query(
-      `
-      INSERT INTO restaurante ${generateInsertBody(row)}
-    `,
-      row,
-    );
+    const result = await this.db.query(`
+      INSERT INTO restaurante ${generateInsertBody(restaurante)}
+    `);
 
     return result;
   }
 
   async updateById(id: number, restaurante: Omit<Partial<Restaurante>, 'id'>) {
-    const row = RestauranteMapper.fromEntityToRow(restaurante);
-
-    const result = await this.db.query(
-      `
-        UPDATE restaurante
-        SET ${generateUpdateSetters(row)}
-        WHERE id = :id
-      `,
-      { ...row, id },
-    );
+    const result = await this.db.query(`
+      UPDATE restaurante
+      SET
+      ${generateUpdateSetters(restaurante)}
+      WHERE id = ${inject(id)}
+    `);
 
     return result;
   }
 
   async deleteById(id: number) {
-    const result = await this.db.query(
-      `
-        DELETE
-        FROM restaurante
-        WHERE id = :id
-      `,
-      { id },
-    );
+    const result = await this.db.query(`
+      DELETE
+      FROM restaurante
+      WHERE id = ${inject(id)}
+    `);
 
     return result;
   }
 
-  async getAll() {
-    const rows = await this.db.query<{ r: RestauranteRow; c: CepRow }[]>(
-      `
-        SELECT *
-        FROM restaurante r
-        JOIN cep c
-        ON r.cep = c.cep;
-      `,
-    );
+  private async baseSelect(sql: string = '') {
+    const rows = await this.db.query<
+      { r: Restaurante; c: Cep; hr: HorarioRestaurante }[]
+    >(`
+      SELECT *
+      FROM restaurante r
+      JOIN cep c
+      ON r.cep = c.cep
+      LEFT JOIN horario_restaurante hr
+      ON r.id = hr.restaurante_id
+      ${sql}
+    `);
 
-    return rows.map((data) =>
-      RestauranteMapper.fromRowToEntity(data.r, data.c),
-    );
+    return groupArray(rows, {
+      by(item) {
+        return item.r.id;
+      },
+      format(group) {
+        const restaurante: RestauranteWithRelations = {
+          ...group[0].r,
+          cep: group[0].c,
+          horarios:
+            group[0].hr.abertura !== null ? group.map((item) => item.hr) : [],
+        };
+
+        return restaurante;
+      },
+    });
+  }
+
+  async findAll() {
+    const restaurantes = await this.baseSelect();
+
+    return restaurantes;
   }
 
   async getById(id: number) {
-    const [row] = await this.db.query<{ r: RestauranteRow; c: CepRow }[]>(
-      `
-        SELECT *
-        FROM restaurante r
-        JOIN cep c
-        ON r.cep = c.cep
-        WHERE r.id = :id;
-      `,
-      { id },
-    );
+    const [restaurante] = await this.baseSelect(`WHERE r.id = ${inject(id)}`);
 
-    if (!row) {
+    if (!restaurante) {
       return null;
     }
 
-    return RestauranteMapper.fromRowToEntity(row.r, row.c);
+    return restaurante;
   }
 
   async getByDominio(dominio: string) {
-    const [data] = await this.db.query<{ r: RestauranteRow; c: CepRow }[]>(
-      `
-        SELECT *
-        FROM restaurante r
-        JOIN cep c
-        ON r.cep = c.cep
-        WHERE r.dominio = :dominio;
-      `,
-      { dominio },
+    const [restaurante] = await this.baseSelect(
+      `WHERE r.dominio = ${inject(dominio)}`,
     );
 
-    if (!data) {
+    if (!restaurante) {
       return null;
     }
 
-    return RestauranteMapper.fromRowToEntity(data.r, data.c);
+    return restaurante;
   }
 }

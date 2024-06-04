@@ -1,3 +1,5 @@
+import { HorarioRestauranteResponseDTO } from 'src/modules/horario-restaurante/dtos/horario-restaurante-response.dto';
+
 export interface RestauranteResponseDTO {
   id: number;
   nome: string;
@@ -9,4 +11,7 @@ export interface RestauranteResponseDTO {
   bairro: string;
   cidade: string;
   estado: string;
+  qtPedidosFidelidade: number | null;
+  valorFidelidade: number | null;
+  horarios: HorarioRestauranteResponseDTO[];
 }

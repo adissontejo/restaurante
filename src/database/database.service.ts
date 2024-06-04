@@ -48,6 +48,8 @@ export class Database implements OnModuleInit, OnModuleDestroy {
   async query<T = ResultSetHeader>(sql: string, params?: any) {
     const connection = connectionNamespace.get(connectionKey);
 
+    console.log(sql);
+
     let result: any;
 
     if (!connection) {

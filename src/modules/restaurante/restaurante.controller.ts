@@ -10,10 +10,10 @@ import {
 } from '@nestjs/common';
 import { RestauranteService } from './restaurante.service';
 import { CreateRestauranteDTO } from './dtos/create-restaurante.dto';
-import { RestauranteMapper } from './restaurante.mapper';
 import { CreateRestauranteValidator } from './validators/create-restaurante.validator';
 import { UpdateRestauranteDTO } from './dtos/update-restaurate.dto';
 import { UpdateRestauranteValidator } from './validators/update-restaurante-validator';
+import { RestauranteMapper } from './mappers/restaurante.mapper';
 
 @Controller('/restaurantes')
 export class RestauranteController {
@@ -36,6 +36,13 @@ export class RestauranteController {
   @Get('/:id')
   async get(@Param('id', ParseIntPipe) id: number) {
     const restaurante = await this.service.getById(id);
+
+    return RestauranteMapper.fromEntityToResponseDTO(restaurante);
+  }
+
+  @Get('/by-dominio/:dominio')
+  async getByDominio(@Param('dominio') dominio: string) {
+    const restaurante = await this.service.getByDominio(dominio);
 
     return RestauranteMapper.fromEntityToResponseDTO(restaurante);
   }

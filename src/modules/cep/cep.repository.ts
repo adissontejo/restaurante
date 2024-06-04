@@ -1,15 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Cep } from './cep.entity';
-import { CepMapper } from './cep.mapper';
 import { Database } from 'src/database/database.service';
-import { generateInsertBody } from 'src/utils/sql';
-
-export interface CepRow {
-  cep: string;
-  cidade: string;
-  estado: string;
-  bairro: string;
-}
+import { generateInsertBody, inject } from 'src/utils/sql';
+import { Cep } from './cep.entity';
 
 @Injectable()
 export class CepRepository {
@@ -25,32 +17,24 @@ export class CepRepository {
   }
 
   async insert(cep: Cep) {
-    const row = CepMapper.fromEntityToRow(cep);
-
-    const result = await this.db.query(
-      `
-      INSERT INTO cep ${generateInsertBody(row)}
-    `,
-      row,
-    );
+    const result = await this.db.query(`
+      INSERT INTO cep ${generateInsertBody(cep)}
+    `);
 
     return result;
   }
 
-  async getByCep(cepString: string) {
-    const [data] = await this.db.query<{ c: CepRow }[]>(
-      `
+  async getByCep(cep: string) {
+    const [data] = await this.db.query<{ c: Cep }[]>(`
       SELECT *
       FROM cep c
-      WHERE cep = :cep;
-    `,
-      { cep: cepString },
-    );
+      WHERE cep = ${inject(cep)};
+    `);
 
     if (!data.c) {
       return null;
     }
 
-    return CepMapper.fromRowToEntity(data.c);
+    return data.c;
   }
 }

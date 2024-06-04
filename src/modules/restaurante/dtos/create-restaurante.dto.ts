@@ -1,3 +1,5 @@
+import { CreateHorarioRestaurateDTO } from 'src/modules/horario-restaurante/dtos/create-horario-restaurante.dto';
+
 export interface CreateRestauranteDTO {
   nome: string;
   rua: string;
@@ -5,4 +7,7 @@ export interface CreateRestauranteDTO {
   cep: string;
   complemento: string;
   dominio: string;
+  horarios: CreateHorarioRestaurateDTO[];
+  qtPedidosFidelidade: number;
+  valorFidelidade: number;
 }

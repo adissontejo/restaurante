@@ -1,8 +1,11 @@
 import { BaseValidator } from 'src/core/validator.core';
+import { CreateHorarioRestauranteValidator } from 'src/modules/horario-restaurante/validators/create-horario-restaurante.validator';
 import { ZodSchema, z } from 'zod';
 
 export class UpdateRestauranteValidator extends BaseValidator {
-  protected schema(): ZodSchema {
+  private readonly horarioValidator = new CreateHorarioRestauranteValidator();
+
+  get schema(): ZodSchema {
     return z.object({
       nome: z.string().min(3).max(100).optional(),
       rua: z.string().min(3).max(100).optional(),
@@ -18,6 +21,7 @@ export class UpdateRestauranteValidator extends BaseValidator {
         .max(20)
         .regex(/^(?!-)[a-zA-Z0-9-]{1,63}(?<!-)$/)
         .optional(),
+      horarios: z.array(this.horarioValidator.schema).nonempty().optional(),
     });
   }
 }
