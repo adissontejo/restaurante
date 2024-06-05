@@ -109,7 +109,10 @@ export class RestauranteService {
     };
   }
 
+  @Transaction()
   async deleteById(id: number) {
+    await this.horariosRestauranteService.deleteHorariosFromRestaurante(id);
+
     await this.repository.deleteById(id);
   }
 

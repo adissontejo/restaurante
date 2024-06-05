@@ -7,15 +7,6 @@ import { Cep } from './cep.entity';
 export class CepRepository {
   constructor(private readonly db: Database) {}
 
-  get mapping() {
-    return {
-      cep: 'cep',
-      cidade: 'cidade',
-      bairro: 'bairro',
-      estado: 'estado',
-    };
-  }
-
   async insert(cep: Cep) {
     const result = await this.db.query(`
       INSERT INTO cep ${generateInsertBody(cep)}
@@ -31,7 +22,7 @@ export class CepRepository {
       WHERE cep = ${inject(cep)};
     `);
 
-    if (!data.c) {
+    if (!data) {
       return null;
     }
 

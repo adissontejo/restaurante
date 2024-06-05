@@ -15,7 +15,7 @@ export class HorarioRestauranteService {
     restauranteId: number,
     data: CreateHorarioRestaurateDTO[],
   ) {
-    await this.repository.deleteByRestaurante(restauranteId);
+    await this.deleteHorariosFromRestaurante(restauranteId);
 
     const horarios = data
       .map((item) =>
@@ -46,5 +46,9 @@ export class HorarioRestauranteService {
     await this.repository.insertMany(horarios);
 
     return horarios;
+  }
+
+  async deleteHorariosFromRestaurante(restauranteId: number) {
+    await this.repository.deleteByRestaurante(restauranteId);
   }
 }

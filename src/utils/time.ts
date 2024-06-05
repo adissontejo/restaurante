@@ -1,7 +1,13 @@
 export const extractTime = (time: string) => {
-  const [hours, minutes, seconds] = time.split(':').map(Number);
+  const [hours, minutes, seconds] = time
+    .split(':')
+    .map((value) => Number(value.replace(/\D/g, '')));
 
-  return { hours, minutes, seconds };
+  return {
+    hours: hours || 0,
+    minutes: minutes || 0,
+    seconds: seconds || 0,
+  };
 };
 
 export const extractTimeInHours = (time: string) => {

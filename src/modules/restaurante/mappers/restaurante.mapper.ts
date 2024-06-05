@@ -44,7 +44,7 @@ export abstract class RestauranteMapper {
       dominio: data.dominio,
       rua: data.rua,
       numero: data.numero,
-      complemento: data.complemento,
+      complemento: data.complemento || null,
       cep: data.cep.cep,
       bairro: data.cep.bairro,
       cidade: data.cep.cidade,

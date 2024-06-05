@@ -1,6 +1,6 @@
 import { BaseValidator } from 'src/core/validator.core';
 import { ZodSchema, z } from 'zod';
-import { extractTime } from 'src/utils/time';
+import { compareTimes, extractTime } from 'src/utils/time';
 import { DiaSemana } from '../horario-restaurante.entity';
 
 export class CreateHorarioRestauranteValidator extends BaseValidator {
@@ -14,10 +14,14 @@ export class CreateHorarioRestauranteValidator extends BaseValidator {
         return hours < 24 && minutes < 60 && (isNaN(seconds) || seconds < 60);
       }, 'Invalid time values');
 
-    return z.object({
-      abertura: timeSchema,
-      fechamento: timeSchema,
-      diaSemana: z.nativeEnum(DiaSemana),
-    });
+    return z
+      .object({
+        abertura: timeSchema,
+        fechamento: timeSchema,
+        diaSemana: z.nativeEnum(DiaSemana),
+      })
+      .refine(({ abertura, fechamento }) => {
+        return compareTimes(abertura, fechamento) < 0;
+      }, 'Invalid time values');
   }
 }

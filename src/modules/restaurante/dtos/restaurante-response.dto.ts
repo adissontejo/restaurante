@@ -6,7 +6,7 @@ export interface RestauranteResponseDTO {
   rua: string;
   numero: number;
   cep: string;
-  complemento?: string;
+  complemento: string | null;
   dominio: string;
   bairro: string;
   cidade: string;
