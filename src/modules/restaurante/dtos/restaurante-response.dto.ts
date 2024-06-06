@@ -13,5 +13,6 @@ export interface RestauranteResponseDTO {
   estado: string;
   qtPedidosFidelidade: number | null;
   valorFidelidade: number | null;
+  logoUrl: string | null;
   horarios: HorarioRestauranteResponseDTO[];
 }

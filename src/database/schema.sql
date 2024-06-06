@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`horario_restaurante` (
   `abertura` TIME NOT NULL,
   `fechamento` TIME NOT NULL,
   `restaurante_id` INT NOT NULL,
-  PRIMARY KEY (`dia_semana`, `abertura`),
+  PRIMARY KEY (`dia_semana`, `abertura`, `restaurante_id`),
   CONSTRAINT `fk_HORARIOS_RESTAURANTE_RESTAURANTE`
     FOREIGN KEY (`restaurante_id`)
     REFERENCES `restaurante`.`restaurante` (`id`)

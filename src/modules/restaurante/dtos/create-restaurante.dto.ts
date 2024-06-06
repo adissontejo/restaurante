@@ -8,6 +8,7 @@ export interface CreateRestauranteDTO {
   complemento: string;
   dominio: string;
   horarios: CreateHorarioRestaurateDTO[];
-  qtPedidosFidelidade: number;
-  valorFidelidade: number;
+  qtPedidosFidelidade?: number;
+  valorFidelidade?: number;
+  logo?: Express.Multer.File;
 }

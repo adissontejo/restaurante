@@ -51,6 +51,7 @@ export abstract class RestauranteMapper {
       estado: data.cep.estado,
       qtPedidosFidelidade: data.qt_pedidos_fidelidade || null,
       valorFidelidade: data.valor_fidelidade || null,
+      logoUrl: data.logo_url || null,
       horarios: data.horarios.map(
         HorarioRestauranteMapper.fromEntityToResponseDTO,
       ),

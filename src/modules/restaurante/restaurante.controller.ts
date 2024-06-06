@@ -7,6 +7,8 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { RestauranteService } from './restaurante.service';
 import { CreateRestauranteDTO } from './dtos/create-restaurante.dto';
@@ -14,14 +16,23 @@ import { CreateRestauranteValidator } from './validators/create-restaurante.vali
 import { UpdateRestauranteDTO } from './dtos/update-restaurate.dto';
 import { UpdateRestauranteValidator } from './validators/update-restaurante-validator';
 import { RestauranteMapper } from './mappers/restaurante.mapper';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ImageFilePipe } from 'src/components/image-file.pipe';
 
 @Controller('/restaurantes')
 export class RestauranteController {
   constructor(private readonly service: RestauranteService) {}
 
   @Post()
-  async create(@Body(CreateRestauranteValidator) data: CreateRestauranteDTO) {
-    const restaurante = await this.service.create(data);
+  @UseInterceptors(FileInterceptor('logo'))
+  async create(
+    @Body(CreateRestauranteValidator) data: Omit<CreateRestauranteDTO, 'logo'>,
+    @UploadedFile(ImageFilePipe) logo?: Express.Multer.File,
+  ) {
+    const restaurante = await this.service.create({
+      ...data,
+      logo,
+    });
 
     return RestauranteMapper.fromEntityToResponseDTO(restaurante);
   }
@@ -48,11 +59,16 @@ export class RestauranteController {
   }
 
   @Put('/:id')
+  @UseInterceptors(FileInterceptor('logo'))
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body(UpdateRestauranteValidator) data: UpdateRestauranteDTO,
+    @Body(UpdateRestauranteValidator) data: Omit<UpdateRestauranteDTO, 'logo'>,
+    @UploadedFile(ImageFilePipe) logo?: Express.Multer.File,
   ) {
-    const restaurante = await this.service.updateById(id, data);
+    const restaurante = await this.service.updateById(id, {
+      ...data,
+      logo,
+    });
 
     return RestauranteMapper.fromEntityToResponseDTO(restaurante);
   }

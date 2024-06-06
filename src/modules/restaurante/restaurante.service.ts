@@ -8,6 +8,8 @@ import { Transaction } from 'src/decorators/transaction.decorator';
 import { HorarioRestauranteService } from '../horario-restaurante/horario-restaurante.service';
 import { RestauranteMapper } from './mappers/restaurante.mapper';
 import { RestauranteWithRelations } from './restaurante.entity';
+import { StorageService } from 'src/storage/storage.service';
+import { removeUndefinedAndAssign } from 'src/utils/object';
 
 @Injectable()
 export class RestauranteService {
@@ -15,6 +17,7 @@ export class RestauranteService {
     private readonly repository: RestauranteRepository,
     private readonly cepService: CepService,
     private readonly horariosRestauranteService: HorarioRestauranteService,
+    private readonly storageService: StorageService,
   ) {}
 
   @Transaction()
@@ -22,6 +25,11 @@ export class RestauranteService {
     await this.checkExistingDominio(data.dominio);
 
     const createData = RestauranteMapper.fromCreateDTOToEntity(data);
+
+    if (data.logo) {
+      createData.logo_url = await this.storageService.uploadFile(data.logo);
+    }
+
     const cep = await this.cepService.createIfNotExists(data.cep);
     const result = await this.repository.insert(createData);
 
@@ -79,6 +87,14 @@ export class RestauranteService {
     const restaurante = await this.getById(id);
     const updateData = RestauranteMapper.fromUpdateDTOToEntity(data);
 
+    if (data.logo) {
+      if (restaurante.logo_url) {
+        await this.storageService.deleteFile(restaurante.logo_url);
+      }
+
+      updateData.logo_url = await this.storageService.uploadFile(data.logo);
+    }
+
     if (data.dominio && data.dominio !== restaurante.dominio) {
       await this.checkExistingDominio(data.dominio);
     }
@@ -101,9 +117,10 @@ export class RestauranteService {
         );
     }
 
+    removeUndefinedAndAssign(restaurante, updateData);
+
     return {
       ...restaurante,
-      ...updateData,
       cep,
       horarios,
     };
@@ -111,6 +128,12 @@ export class RestauranteService {
 
   @Transaction()
   async deleteById(id: number) {
+    const restaurante = await this.getById(id);
+
+    if (restaurante.logo_url) {
+      await this.storageService.deleteFile(restaurante.logo_url);
+    }
+
     await this.horariosRestauranteService.deleteHorariosFromRestaurante(id);
 
     await this.repository.deleteById(id);

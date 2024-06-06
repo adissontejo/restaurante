@@ -9,8 +9,8 @@ export class UpdateRestauranteValidator extends BaseValidator {
     return z.object({
       nome: z.string().min(3).max(100).optional(),
       rua: z.string().min(3).max(100).optional(),
-      numero: z.number().int().positive().optional(),
-      cep: z
+      numero: z.coerce.number().int().positive().optional(),
+      cep: z.coerce
         .string()
         .regex(/^\d{8}$/)
         .optional(),
@@ -22,6 +22,8 @@ export class UpdateRestauranteValidator extends BaseValidator {
         .regex(/^(?!-)[a-zA-Z0-9-]{1,63}(?<!-)$/)
         .optional(),
       horarios: z.array(this.horarioValidator.schema).nonempty().optional(),
+      qtPedidosFidelidade: z.coerce.number().int().positive().nullish(),
+      valorFidelidade: z.coerce.number().positive().nullish(),
     });
   }
 }
