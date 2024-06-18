@@ -111,7 +111,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`item`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`item` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) NOT NULL,
   `habilitado` TINYINT NOT NULL,
   `restaurante_id` INT NOT NULL,
