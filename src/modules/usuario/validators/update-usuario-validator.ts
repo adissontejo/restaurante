@@ -5,10 +5,12 @@ export class UpdateUsuarioValidator extends BaseValidator {
 
   get schema(): ZodSchema {
     return z.object({
-        nome: z.string().min(3).max(100),
-        email: z.string().min(3).max(100),
-        data_nascimento: z.string().min(3).max(100),
-        celular: z.string().min(3).max(100)
+        nome: z.string().min(3).max(100).optional(),
+        email: z.string().min(3).max(100).optional(),
+        dataNascimento: z.string().refine(val => !isNaN(Date.parse(val)), {
+            message: "Invalid date format",
+        }).optional(),
+        celular: z.string().min(3).max(100).optional()
     });
   }
 }

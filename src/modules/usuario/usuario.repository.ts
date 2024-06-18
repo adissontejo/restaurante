@@ -41,14 +41,14 @@ export class UsuarioRepository {
     }
 
     private async baseSelect(sql: string = '') {
-      const base = await this.db.query < Usuario[] >
+      const base = await this.db.query < {u: Usuario}[] >
       (`
         SELECT *
-        FROM usuario
+        FROM usuario u
         ${sql}
       `);
 
-      return base;
+      return base.map(item => item.u);
     }
 
     async findAll() {
@@ -58,7 +58,7 @@ export class UsuarioRepository {
     }
 
     async getById(id: number) {
-      const [usuario] = await this.baseSelect(`WHERE id = ${inject(id)}`);
+      const [usuario] = await this.baseSelect(`WHERE u.id = ${inject(id)}`);
 
       if (!usuario) {
         return null;
@@ -69,7 +69,7 @@ export class UsuarioRepository {
 
     async getByEmail(email: string) {
         const [usuario] = await this.baseSelect(
-          `WHERE email = ${inject(email)}`,
+          `WHERE u.email = ${inject(email)}`,
         );
 
         if (!usuario) {

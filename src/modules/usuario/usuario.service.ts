@@ -75,6 +75,7 @@ export class UsuarioService {
       updateData.foto_perfil_url = await this.storageService.uploadFile(data.fotoPerfilUrl);
     }
 
+    await this.repository.updateById(usuario.id, updateData);
 
     removeUndefinedAndAssign(usuario, updateData);
 

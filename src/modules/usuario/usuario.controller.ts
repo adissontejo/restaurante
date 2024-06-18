@@ -40,7 +40,6 @@ export class UsuarioController {
   @Get()
   async list() {
     const usuarios = await this.service.list();
-
     return usuarios.map(UsuarioMapper.fromEntityToResponseDTO);
   }
 
