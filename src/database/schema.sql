@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`restaurante` (
   `valor_fidelidade` FLOAT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_restaurante_1_idx` (`cep` ASC) VISIBLE,
+  UNIQUE INDEX `dominio_UNIQUE` (`dominio` ASC) VISIBLE,
   CONSTRAINT `fk_RESTAURANTES_CEP`
     FOREIGN KEY (`cep`)
     REFERENCES `restaurante`.`cep` (`cep`)
@@ -54,12 +55,11 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`horario_restaurante`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`horario_restaurante` (
-  `id` INT NOT NULL AUTO_INCREMENT,
   `dia_semana` ENUM('dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab') NOT NULL,
   `abertura` TIME NOT NULL,
   `fechamento` TIME NOT NULL,
   `restaurante_id` INT NOT NULL,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`dia_semana`, `abertura`, `restaurante_id`),
   CONSTRAINT `fk_HORARIOS_RESTAURANTE_RESTAURANTE`
     FOREIGN KEY (`restaurante_id`)
     REFERENCES `restaurante`.`restaurante` (`id`)
@@ -72,7 +72,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`usuario`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`usuario` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
   `data_nascimento` DATE NOT NULL,
@@ -87,7 +87,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`funcionario`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`funcionario` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `cargo` ENUM('garcom', 'cozinheiro', 'dono', 'admin') NOT NULL,
   `usuario_id` INT NOT NULL,
   `restaurante_id` INT NOT NULL,
@@ -129,7 +129,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`campo_formulario`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`campo_formulario` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) NOT NULL,
   `tipo_campo` ENUM('input', 'select') NOT NULL,
   `qt_min_opcoes` INT NULL,
@@ -149,7 +149,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`opcao`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`opcao` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `texto` VARCHAR(100) NOT NULL,
   `campo_formulario_id` INT NOT NULL,
   PRIMARY KEY (`id`),
@@ -166,7 +166,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`instancia_item`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`instancia_item` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `preco` FLOAT NOT NULL,
   `ativa` TINYINT NOT NULL,
   `item_id` INT NOT NULL,
@@ -184,7 +184,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`pedido`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`pedido` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `data_hora` DATETIME NOT NULL,
   `numero_mesa` INT NOT NULL,
   `observacao` VARCHAR(400) NULL,
@@ -219,7 +219,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`item_pedido`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`item_pedido` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `quantidade` INT NOT NULL,
   `observacao` VARCHAR(400) NULL,
   `pedido_id` INT NOT NULL,
@@ -244,7 +244,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`resposta_campo_formulario`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`resposta_campo_formulario` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `resposta` VARCHAR(400) NULL,
   `campo_formulario_id` INT NOT NULL,
   `item_pedido_id` INT NOT NULL,
@@ -269,13 +269,12 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`opcao_selecionada`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`opcao_selecionada` (
-  `id` INT NOT NULL,
   `resposta_campo_formulario_id` INT NOT NULL,
   `opcao_id` INT NOT NULL,
-  PRIMARY KEY (`id`),
   INDEX `fk_opcao_selecionada_resposta_campo_formulario1_idx` (`resposta_campo_formulario_id` ASC) VISIBLE,
   INDEX `fk_opcao_selecionada_opcao1_idx` (`opcao_id` ASC) VISIBLE,
   UNIQUE INDEX `uq_resposta_campo_formulario_opcao` (`resposta_campo_formulario_id` ASC, `opcao_id` ASC) VISIBLE,
+  PRIMARY KEY (`resposta_campo_formulario_id`, `opcao_id`),
   CONSTRAINT `fk_opcao_selecionada_resposta_campo_formulario1`
     FOREIGN KEY (`resposta_campo_formulario_id`)
     REFERENCES `restaurante`.`resposta_campo_formulario` (`id`)
@@ -293,7 +292,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`conta`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`conta` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `mes` INT NOT NULL,
   `valor_total` FLOAT NOT NULL,
   `valor_pago` FLOAT NOT NULL,
@@ -319,7 +318,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`cupom`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`cupom` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `desconto` FLOAT NOT NULL,
   `usuario_id` INT NOT NULL,
   `pedido_id` INT NULL,
@@ -350,7 +349,7 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`foto_item`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`foto_item` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `foto_url` VARCHAR(200) NOT NULL,
   `item_id` INT NOT NULL,
   PRIMARY KEY (`id`),
