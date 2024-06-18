@@ -9,6 +9,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { AppExceptionFilter } from './core/exception.core';
 import { StorageModule } from './storage/storage.module';
 import { ContaModule } from './modules/conta/conta.module';
+import { ItemModule } from './modules/item/item.module';
 
 @Global()
 @Module({
@@ -20,7 +21,8 @@ import { ContaModule } from './modules/conta/conta.module';
     UsuarioModule,
     FuncionarioModule,
     CupomModule,
-    ContaModule
+    ContaModule,
+    ItemModule
   ],
   providers: [
     {
