@@ -7,7 +7,7 @@ export class UpdateItemValidator extends BaseValidator {
     return z.object({
       nome: z.string().min(1).max(100).optional(),
       habilitado: z.coerce.boolean().optional(),
-      restauranteId: z.coerce.number().int().positive(),
+      restauranteId: z.coerce.number().int().positive().optional(),
     });
   }
 }
