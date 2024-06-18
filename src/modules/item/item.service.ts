@@ -17,7 +17,7 @@ export class ItemService {
     async create(data: CreateItemDTO): Promise<Item>{
         const createData = ItemMapper.fromCreateDTOToEntity(data)
     
-        if (!data.nome || !data.habilitado || !data.restauranteId) {
+        if (!data.nome || !data.habilitado || !data.restaurante_id) {
             throw new AppException(
                 `Todos os campos obrigatórios devem ser fornecidos`,
                 ExceptionType.INVALID_PARAMS,

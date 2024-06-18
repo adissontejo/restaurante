@@ -10,7 +10,7 @@ export abstract class ItemMapper {
         return {
             nome: data.nome,
             habilitado: data.habilitado,
-            restauranteId: data.restauranteId
+            restaurante_id: data.restaurante_id
         };
     }
 
@@ -20,7 +20,7 @@ export abstract class ItemMapper {
         return {
             nome: data.nome,
             habilitado: data.habilitado,
-            restauranteId: data.restauranteId
+            restaurante_id: data.restaurante_id
         };
     }
 
@@ -31,7 +31,7 @@ export abstract class ItemMapper {
             id: data.id,
             nome: data.nome,
             habilitado: data.habilitado,
-            restauranteId: data.restauranteId
+            restaurante_id: data.restaurante_id
         };
     }
 }

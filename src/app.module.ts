@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { AppExceptionFilter } from './core/exception.core';
 import { StorageModule } from './storage/storage.module';
+import { ItemModule } from './modules/item/item.module';
 
 @Global()
 @Module({
@@ -13,6 +14,7 @@ import { StorageModule } from './storage/storage.module';
     DatabaseModule,
     StorageModule,
     RestauranteModule,
+    ItemModule,
   ],
   providers: [
     {
