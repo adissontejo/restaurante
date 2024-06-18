@@ -8,6 +8,7 @@ import { HorarioRestauranteModule } from '../horario-restaurante/horario-restaur
 @Module({
   imports: [CepModule, HorarioRestauranteModule],
   providers: [RestauranteService, RestauranteRepository],
+  exports: [RestauranteService],
   controllers: [RestauranteController],
 })
 export class RestauranteModule {}
