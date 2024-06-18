@@ -23,5 +23,16 @@ export abstract class ItemMapper {
             restauranteId: data.restauranteId
         };
     }
+
+    static fromEntityToResponseDTO(
+        data: Item,
+      ): ItemResponseDTO {
+        return {
+            id: data.id,
+            nome: data.nome,
+            habilitado: data.habilitado,
+            restauranteId: data.restauranteId
+        };
+    }
 }
 
