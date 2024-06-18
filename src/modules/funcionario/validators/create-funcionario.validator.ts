@@ -7,8 +7,8 @@ export class CreateFuncionarioValidator extends BaseValidator {
 
     return z.object({
       cargo: z.string().min(3).max(100),
-      usuarioId: z.coerce.number().int().positive().nullish(),
-      restauranteId: z.coerce.number().int().positive().nullish()
+      usuarioId: z.coerce.number().int().positive(),
+      restauranteId: z.coerce.number().int().positive()
     });
   }
 }

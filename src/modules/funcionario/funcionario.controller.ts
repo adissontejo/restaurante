@@ -22,7 +22,6 @@ export class FuncionarioController {
   constructor(private readonly service: FuncionarioService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('fotoPerfil'))
   async create(
     @Body(CreateFuncionarioValidator) data: CreateFuncionarioDTO
   ) {
@@ -48,7 +47,7 @@ export class FuncionarioController {
   @Put('/:id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body(UpdateFuncionarioValidator) data: Omit<UpdateFuncionarioDTO, 'usuario'>
+    @Body(UpdateFuncionarioValidator) data:UpdateFuncionarioDTO
   ) {
     const funcionario = await this.service.updateById(id, {
       ...data
