@@ -3,8 +3,10 @@ import {
   Catch,
   ExceptionFilter,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { Socket } from 'socket.io';
 
 export enum ExceptionType {
   INVALID_PARAMS,
@@ -24,9 +26,11 @@ export class AppException extends Error {
   }
 }
 
-@Catch(AppException)
+@Catch()
 export class AppExceptionFilter implements ExceptionFilter {
-  private getHttpStatus(type: ExceptionType) {
+  private static readonly logger = new Logger(AppExceptionFilter.name);
+
+  static getHttpStatus(type: ExceptionType) {
     switch (type) {
       case ExceptionType.INVALID_PARAMS:
         return HttpStatus.BAD_REQUEST;
@@ -39,17 +43,36 @@ export class AppExceptionFilter implements ExceptionFilter {
     }
   }
 
-  catch(exception: AppException, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const status = this.getHttpStatus(exception.type);
+  static getBody(exception: Error) {
+    if (exception instanceof AppException) {
+      return {
+        status: this.getHttpStatus(exception.type),
+        errors: exception.body,
+      };
+    } else {
+      AppExceptionFilter.logger.error(exception.message, exception.stack);
 
-    let body = exception.body;
-
-    if (typeof body === 'string') {
-      body = { message: body };
+      return {
+        status: 500,
+        errors: 'Internal Server Error',
+      };
     }
+  }
 
-    response.status(status).json(body);
+  catch(exception: AppException, host: ArgumentsHost) {
+    const body = AppExceptionFilter.getBody(exception);
+
+    if (host.getType() === 'http') {
+      const ctx = host.switchToHttp();
+      const response = ctx.getResponse<Response>();
+
+      response.status(body.status).json(body);
+    } else if (host.getType() === 'ws') {
+      const ctx = host.switchToWs();
+      const client = ctx.getClient<Socket>();
+      const pattern = ctx.getPattern();
+
+      client.emit(`${pattern}_error`, body);
+    }
   }
 }

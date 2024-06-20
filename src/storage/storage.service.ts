@@ -1,7 +1,6 @@
-import { Inject, Injectable, Scope } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { createNamespace } from 'cls-hooked';
-import { Request } from 'express';
 import { existsSync } from 'fs';
 import { mkdir, rm, writeFile } from 'fs/promises';
 import { extname, resolve } from 'path';
@@ -18,14 +17,14 @@ type StorageTransactionNamespace = {
 const storageTransactionNamespace =
   createNamespace<StorageTransactionNamespace>('STORAGE-TRANSACTION');
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class StorageService {
   private uploadPath = 'uploads';
 
-  constructor(@Inject(REQUEST) private request: Request) {}
+  constructor(private readonly configService: ConfigService) {}
 
   get uploadUrl() {
-    return `${this.request.protocol}://${this.request.get('Host')}/storage`;
+    return this.configService.get('UPLOAD_BASE_URL');
   }
 
   private getFilePath(fileName: string) {

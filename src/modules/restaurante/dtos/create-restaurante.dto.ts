@@ -5,7 +5,7 @@ export interface CreateRestauranteDTO {
   rua: string;
   numero: number;
   cep: string;
-  complemento: string;
+  complemento?: string;
   dominio: string;
   horarios: CreateHorarioRestaurateDTO[];
   qtPedidosFidelidade?: number;
