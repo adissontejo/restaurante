@@ -52,8 +52,10 @@ export class ItemRepository {
         return base.map(item => item.i);
     }
 
-    async findAll() {
-        const itens = await this.baseSelect();
+    async findByRestauranteId(restaurante_id: number) {
+        const itens = await this.baseSelect(`
+          WHERE i.restaurante_id = ${inject(restaurante_id)}
+        `);
   
         return itens;
     }

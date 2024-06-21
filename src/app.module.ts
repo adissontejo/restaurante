@@ -10,6 +10,7 @@ import { AppExceptionFilter } from './core/exception.core';
 import { StorageModule } from './storage/storage.module';
 import { ContaModule } from './modules/conta/conta.module';
 import { ItemModule } from './modules/item/item.module';
+import { CampoFormularioModule } from './modules/campo-formulario/campo_formulario.module';
 
 @Global()
 @Module({
@@ -22,7 +23,8 @@ import { ItemModule } from './modules/item/item.module';
     FuncionarioModule,
     CupomModule,
     ContaModule,
-    ItemModule
+    ItemModule,
+    CampoFormularioModule
   ],
   providers: [
     {
