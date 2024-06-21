@@ -14,6 +14,7 @@ import { CampoFormularioModule } from './modules/campo-formulario/campo_formular
 import { InstanciaItemModule } from './modules/instancia-item/instancia_item.module';
 import { OpcaoModule } from './modules/opcao/opcao.module';
 import { RCampoFormularioModule } from './modules/resposta-campo-formulario/resposta-campo-formulario.module';
+import { OpSelecionadaModule } from './modules/opcao-selecionada/opcao-selecionada.module';
 
 @Global()
 @Module({
@@ -30,7 +31,8 @@ import { RCampoFormularioModule } from './modules/resposta-campo-formulario/resp
     CampoFormularioModule,
     InstanciaItemModule,
     OpcaoModule,
-    RCampoFormularioModule
+    RCampoFormularioModule,
+    OpSelecionadaModule
   ],
   providers: [
     {
