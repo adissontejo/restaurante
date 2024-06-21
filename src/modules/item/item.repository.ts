@@ -68,15 +68,4 @@ export class ItemRepository {
         return item;
     }
 
-    async getByEmail(email: string) {
-        const [item] = await this.baseSelect(
-          `WHERE i.email = ${inject(email)}`,
-        );
-
-        if (!item) {
-          return null;
-        }
-
-        return item;
-    }
 }

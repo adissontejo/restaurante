@@ -112,7 +112,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`categoria` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `nome` VARCHAR(50) NOT NULL,
+  `nome` VARCHAR(100) NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
