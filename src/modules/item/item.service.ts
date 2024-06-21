@@ -12,7 +12,6 @@ import { removeUndefinedAndAssign } from 'src/utils/object';
 export class ItemService {
     constructor(
         private readonly repository: ItemRepository,
-        // private readonly restauranteService: RestauranteService,
     ) {}
 
     @Transaction()

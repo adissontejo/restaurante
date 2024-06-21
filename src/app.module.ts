@@ -12,6 +12,7 @@ import { ContaModule } from './modules/conta/conta.module';
 import { ItemModule } from './modules/item/item.module';
 import { CampoFormularioModule } from './modules/campo-formulario/campo_formulario.module';
 import { InstanciaItemModule } from './modules/instancia-item/instancia_item.module';
+import { OpcaoModule } from './modules/opcao/opcao.module';
 
 @Global()
 @Module({
@@ -26,7 +27,8 @@ import { InstanciaItemModule } from './modules/instancia-item/instancia_item.mod
     ContaModule,
     ItemModule,
     CampoFormularioModule,
-    InstanciaItemModule
+    InstanciaItemModule,
+    OpcaoModule
   ],
   providers: [
     {
