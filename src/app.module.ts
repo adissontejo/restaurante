@@ -13,6 +13,7 @@ import { ItemModule } from './modules/item/item.module';
 import { CampoFormularioModule } from './modules/campo-formulario/campo_formulario.module';
 import { InstanciaItemModule } from './modules/instancia-item/instancia_item.module';
 import { OpcaoModule } from './modules/opcao/opcao.module';
+import { RCampoFormularioModule } from './modules/resposta-campo-formulario/resposta-campo-formulario.module';
 
 @Global()
 @Module({
@@ -28,7 +29,8 @@ import { OpcaoModule } from './modules/opcao/opcao.module';
     ItemModule,
     CampoFormularioModule,
     InstanciaItemModule,
-    OpcaoModule
+    OpcaoModule,
+    RCampoFormularioModule
   ],
   providers: [
     {
