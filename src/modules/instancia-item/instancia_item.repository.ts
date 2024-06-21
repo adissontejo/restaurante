@@ -5,26 +5,25 @@ import {
   inject,
 } from 'src/utils/sql';
 import { Database } from 'src/database/database.service';
-import { groupArray } from 'src/utils/array';
-import { Item } from './item.entity';
+import { InstanciaItem } from './instancia_item.entity';
 
 @Injectable()
-export class ItemRepository {
+export class InstanciaItemRepository {
     constructor(private readonly db: Database) {}
 
-    async insert(item: Omit<Item, 'id'>) {
+    async insert(iitem: Omit<InstanciaItem, 'id'>) {
         const result = await this.db.query(`
-            INSERT INTO item ${generateInsertBody(item)}
+            INSERT INTO instancia_itemtem ${generateInsertBody(iitem)}
             `);
 
         return result;
     }
 
-    async updateById(id: number, item: Omit<Partial<Item>, 'id'>) {
+    async updateById(id: number, iitem: Omit<Partial<InstanciaItem>, 'id'>) {
         const result = await this.db.query(`
-          UPDATE item
+          UPDATE instancia_item
           SET
-          ${generateUpdateSetters(item)}
+          ${generateUpdateSetters(iitem)}
           WHERE id = ${inject(id)}
         `);
     
@@ -34,7 +33,7 @@ export class ItemRepository {
     async deleteById(id: number) {
         const result = await this.db.query(`
           DELETE
-          FROM item
+          FROM instancia_item
           WHERE id = ${inject(id)}
         `);
     
@@ -42,43 +41,32 @@ export class ItemRepository {
       }
 
     private async baseSelect(sql: string = '') {
-        const base = await this.db.query < {i: Item}[] >
+        const base = await this.db.query < {i: InstanciaItem}[] >
         (`
           SELECT *
-          FROM item i
+          FROM instancia_item i
           ${sql}
         `);
   
-        return base.map(item => item.i);
+        return base.map(iitem => iitem.i);
     }
 
-    async findByRestauranteId(restaurante_id: number) {
+    async findByItemId(item_id: number) {
         const itens = await this.baseSelect(`
-          WHERE i.restaurante_id = ${inject(restaurante_id)}
+          WHERE i.item_id = ${inject(item_id)}
         `);
   
         return itens;
     }
 
     async getById(id: number) {
-        const [item] = await this.baseSelect(`WHERE i.id = ${inject(id)}`);
+        const [iitem] = await this.baseSelect(`WHERE i.id = ${inject(id)}`);
   
-        if (!item) {
+        if (!iitem) {
           return null;
         }
   
-        return item;
+        return iitem;
     }
 
-    async getByEmail(email: string) {
-        const [item] = await this.baseSelect(
-          `WHERE i.email = ${inject(email)}`,
-        );
-
-        if (!item) {
-          return null;
-        }
-
-        return item;
-    }
 }

@@ -7,6 +7,7 @@ import {
     ParseIntPipe,
     Post,
     Put,
+    Query,
     UploadedFile,
     UseInterceptors,
   } from '@nestjs/common';
@@ -18,6 +19,7 @@ import { UpdateItemValidator } from './validators/update-item.validators';
 import { ItemMapper } from './mappers/item.mapper';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageFilePipe } from 'src/components/image-file.pipe';
+import { AppException, ExceptionType } from 'src/core/exception.core';
   
 @Controller('/itens')
 export class ItemController {
@@ -33,8 +35,12 @@ export class ItemController {
     }
 
     @Get()
-    async list() {
-        const itens = await this.service.list();
+    async list(@Query('restaurante_id', ParseIntPipe)restaurante_id: number) {
+        if (!restaurante_id) {
+            throw new AppException ("Deve passar o restaurante_id", ExceptionType.INVALID_PARAMS)
+        }
+
+        const itens = await this.service.list(restaurante_id);
 
         return itens.map(ItemMapper.fromEntityToResponseDTO);
     }
