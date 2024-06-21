@@ -11,6 +11,7 @@ import { StorageModule } from './storage/storage.module';
 import { ContaModule } from './modules/conta/conta.module';
 import { ItemModule } from './modules/item/item.module';
 import { CampoFormularioModule } from './modules/campo-formulario/campo_formulario.module';
+import { InstanciaItemModule } from './modules/instancia-item/instancia_item.module';
 
 @Global()
 @Module({
@@ -24,7 +25,8 @@ import { CampoFormularioModule } from './modules/campo-formulario/campo_formular
     CupomModule,
     ContaModule,
     ItemModule,
-    CampoFormularioModule
+    CampoFormularioModule,
+    InstanciaItemModule
   ],
   providers: [
     {
