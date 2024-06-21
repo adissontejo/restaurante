@@ -2,6 +2,7 @@ import {
   ArgumentsHost,
   Catch,
   ExceptionFilter,
+  HttpException,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
@@ -48,6 +49,11 @@ export class AppExceptionFilter implements ExceptionFilter {
       return {
         status: this.getHttpStatus(exception.type),
         errors: exception.body,
+      };
+    } else if (exception instanceof HttpException) {
+      return {
+        status: exception.getStatus(),
+        message: exception.message,
       };
     } else {
       AppExceptionFilter.logger.error(exception.message, exception.stack);

@@ -18,12 +18,14 @@ import { UpdateRestauranteValidator } from './validators/update-restaurante-vali
 import { RestauranteMapper } from './mappers/restaurante.mapper';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageFilePipe } from 'src/components/image-file.pipe';
+import { UseAuthentication } from '../auth/decorators/use-authentication.decorator';
 
 @Controller('/restaurantes')
 export class RestauranteController {
   constructor(private readonly service: RestauranteService) {}
 
   @Post()
+  @UseAuthentication()
   @UseInterceptors(FileInterceptor('logo'))
   async create(
     @Body(CreateRestauranteValidator) data: Omit<CreateRestauranteDTO, 'logo'>,

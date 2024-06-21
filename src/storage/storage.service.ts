@@ -55,6 +55,10 @@ export class StorageService {
   }
 
   async deleteFile(fileUrl: string) {
+    if (!fileUrl.startsWith(this.uploadUrl)) {
+      return;
+    }
+
     const transaction = storageTransactionNamespace.get('transaction');
 
     if (transaction) {

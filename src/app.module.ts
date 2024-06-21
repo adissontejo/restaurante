@@ -15,11 +15,15 @@ import { InstanciaItemModule } from './modules/instancia-item/instancia_item.mod
 import { OpcaoModule } from './modules/opcao/opcao.module';
 import { RCampoFormularioModule } from './modules/resposta-campo-formulario/resposta-campo-formulario.module';
 import { OpSelecionadaModule } from './modules/opcao-selecionada/opcao-selecionada.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Global()
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    AuthModule,
     DatabaseModule,
     StorageModule,
     RestauranteModule,
@@ -32,7 +36,7 @@ import { OpSelecionadaModule } from './modules/opcao-selecionada/opcao-seleciona
     InstanciaItemModule,
     OpcaoModule,
     RCampoFormularioModule,
-    OpSelecionadaModule
+    OpSelecionadaModule,
   ],
   providers: [
     {

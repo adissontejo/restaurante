@@ -18,20 +18,23 @@ import { UpdateUsuarioValidator } from './validators/update-usuario-validator';
 import { UsuarioMapper } from './mappers/usuario.mapper';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageFilePipe } from 'src/components/image-file.pipe';
+import { GoogleUser } from '../auth/decorators/google-user.decorator';
+import { UseAuthentication } from '../auth/decorators/use-authentication.decorator';
+import { UserProfileDTO } from 'src/services/google';
 
 @Controller('/usuarios')
 export class UsuarioController {
   constructor(private readonly service: UsuarioService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('fotoPerfilUrl'))
+  @UseInterceptors(FileInterceptor('fotoPerfil'))
   async create(
-    @Body(CreateUsuarioValidator) data: Omit<CreateUsuarioDTO, 'fotoPerfilUrl'>,
-    @UploadedFile(ImageFilePipe) fotoPerfilUrl?: Express.Multer.File,
+    @Body(CreateUsuarioValidator) data: Omit<CreateUsuarioDTO, 'fotoPerfil'>,
+    @UploadedFile(ImageFilePipe) fotoPerfil?: Express.Multer.File,
   ) {
     const usuario = await this.service.create({
       ...data,
-      fotoPerfilUrl,
+      fotoPerfil,
     });
 
     return UsuarioMapper.fromEntityToResponseDTO(usuario);
@@ -43,6 +46,14 @@ export class UsuarioController {
     return usuarios.map(UsuarioMapper.fromEntityToResponseDTO);
   }
 
+  @Get('/me')
+  @UseAuthentication()
+  async getLogged(@GoogleUser() user: UserProfileDTO) {
+    const usuario = await this.service.getByEmail(user.email);
+
+    return UsuarioMapper.fromEntityToResponseDTO(usuario);
+  }
+
   @Get('/:id')
   async get(@Param('id', ParseIntPipe) id: number) {
     const usuario = await this.service.getById(id);
@@ -51,15 +62,15 @@ export class UsuarioController {
   }
 
   @Put('/:id')
-  @UseInterceptors(FileInterceptor('fotoPerfilUrl'))
+  @UseInterceptors(FileInterceptor('fotoPerfil'))
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body(UpdateUsuarioValidator) data: Omit<UpdateUsuarioDTO, 'fotoPerfilUrl'>,
-    @UploadedFile(ImageFilePipe) fotoPerfilUrl?: Express.Multer.File,
+    @Body(UpdateUsuarioValidator) data: Omit<UpdateUsuarioDTO, 'fotoPerfil'>,
+    @UploadedFile(ImageFilePipe) fotoPerfil?: Express.Multer.File,
   ) {
     const usuario = await this.service.updateById(id, {
       ...data,
-      fotoPerfilUrl,
+      fotoPerfil,
     });
 
     return UsuarioMapper.fromEntityToResponseDTO(usuario);

@@ -11,33 +11,50 @@ import { removeUndefinedAndAssign } from 'src/utils/object';
 
 @Injectable()
 export class UsuarioService {
-  constructor(private readonly repository: UsuarioRepository,
-        private readonly storageService: StorageService
+  constructor(
+    private readonly repository: UsuarioRepository,
+    private readonly storageService: StorageService,
   ) {}
 
-  @Transaction()
-  async create(data: CreateUsuarioDTO): Promise<Usuario> {
-
+  private async unsafeCreate(data: CreateUsuarioDTO) {
     const createData = UsuarioMapper.fromCreateDTOToEntity(data);
 
     if (!data.nome || !data.email || !data.dataNascimento) {
-        throw new AppException(
-          `Todos os campos obrigatórios devem ser fornecidos`,
-          ExceptionType.INVALID_PARAMS,
-        );
+      throw new AppException(
+        `Todos os campos obrigatórios devem ser fornecidos`,
+        ExceptionType.INVALID_PARAMS,
+      );
     }
 
-    this.checkExistingEmail(data.email);
-
-    if (data.fotoPerfilUrl) {
-      createData.foto_perfil_url = await this.storageService.uploadFile(data.fotoPerfilUrl);
+    if (data.fotoPerfil) {
+      createData.foto_perfil_url = await this.storageService.uploadFile(
+        data.fotoPerfil,
+      );
     }
 
     const result = await this.repository.insert(createData);
     return {
       ...createData,
-      id: result.insertId
+      id: result.insertId,
     };
+  }
+
+  @Transaction()
+  async createIfNotExists(data: CreateUsuarioDTO): Promise<Usuario> {
+    const existing = await this.repository.getByEmail(data.email);
+
+    if (existing) {
+      return existing;
+    }
+
+    return this.unsafeCreate(data);
+  }
+
+  @Transaction()
+  async create(data: CreateUsuarioDTO): Promise<Usuario> {
+    await this.checkExistingEmail(data.email);
+
+    return this.unsafeCreate(data);
   }
 
   async list() {
@@ -59,20 +76,32 @@ export class UsuarioService {
     return usuario;
   }
 
+  async getByEmail(email: string) {
+    const usuario = await this.repository.getByEmail(email);
+
+    if (!usuario) {
+      throw new AppException(
+        `Usuário com email ${email} não encontrado`,
+        ExceptionType.DATA_NOT_FOUND,
+      );
+    }
+
+    return usuario;
+  }
+
   @Transaction()
-  async updateById(
-    id: number,
-    data: UpdateUsuarioDTO,
-  ): Promise<Usuario> {
+  async updateById(id: number, data: UpdateUsuarioDTO): Promise<Usuario> {
     const usuario = await this.getById(id);
     const updateData = UsuarioMapper.fromUpdateDTOToEntity(data);
 
-    if (data.fotoPerfilUrl) {
+    if (data.fotoPerfil) {
       if (usuario.foto_perfil_url) {
         await this.storageService.deleteFile(usuario.foto_perfil_url);
       }
 
-      updateData.foto_perfil_url = await this.storageService.uploadFile(data.fotoPerfilUrl);
+      updateData.foto_perfil_url = await this.storageService.uploadFile(
+        data.fotoPerfil,
+      );
     }
 
     await this.repository.updateById(usuario.id, updateData);
@@ -80,7 +109,7 @@ export class UsuarioService {
     removeUndefinedAndAssign(usuario, updateData);
 
     return {
-      ...usuario
+      ...usuario,
     };
   }
 
