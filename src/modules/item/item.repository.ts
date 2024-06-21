@@ -52,10 +52,8 @@ export class ItemRepository {
         return base.map(item => item.i);
     }
 
-    async findByRestauranteId(restaurante_id: number) {
-        const itens = await this.baseSelect(`
-          WHERE i.restaurante_id = ${inject(restaurante_id)}
-        `);
+    async findAll() {
+        const itens = await this.baseSelect();
   
         return itens;
     }
@@ -70,15 +68,4 @@ export class ItemRepository {
         return item;
     }
 
-    async getByEmail(email: string) {
-        const [item] = await this.baseSelect(
-          `WHERE i.email = ${inject(email)}`,
-        );
-
-        if (!item) {
-          return null;
-        }
-
-        return item;
-    }
 }

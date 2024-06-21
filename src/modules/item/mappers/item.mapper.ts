@@ -11,7 +11,7 @@ export abstract class ItemMapper {
             nome: data.nome,
             habilitado: data.habilitado,
             restaurante_id: data.restaurante_id,
-            foto_item_url: data.foto_item_url,
+            categoria_id: data.categoria_id
         };
     }
 
@@ -22,10 +22,10 @@ export abstract class ItemMapper {
             nome: data.nome,
             habilitado: data.habilitado,
             restaurante_id: data.restaurante_id,
-            foto_item_url: data.foto_item_url,
+            categoria_id: data.categoria_id
         };
     }
-    
+
     static fromEntityToResponseDTO(
         data: Item,
       ): ItemResponseDTO {
@@ -34,7 +34,7 @@ export abstract class ItemMapper {
             nome: data.nome,
             habilitado: data.habilitado,
             restaurante_id: data.restaurante_id,
-            foto_item_url: data.foto_item_url,
+            categoria_id: data.categoria_id
         };
     }
 }

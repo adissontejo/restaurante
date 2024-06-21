@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ItemRepository } from './item.repository';
+import { StorageService } from 'src/storage/storage.service';
 import { CreateItemDTO } from './dtos/create-item.dto';
 import { Item } from './item.entity';
 import { ItemMapper } from './mappers/item.mapper';
@@ -10,17 +11,14 @@ import { removeUndefinedAndAssign } from 'src/utils/object';
 
 @Injectable()
 export class ItemService {
-    constructor(
-        private readonly repository: ItemRepository,
-    ) {}
+    constructor(private readonly repository: ItemRepository) {}
 
     @Transaction()
-    async create(data: CreateItemDTO): Promise<Item> {
+    async create(data: CreateItemDTO): Promise<Item>{
         const createData = ItemMapper.fromCreateDTOToEntity(data)
-
-        console.log(createData)
-        
-        if (!data.nome || !data.habilitado || !data.restaurante_id) {
+    
+        if (!data.nome || !data.habilitado 
+            || !data.restaurante_id || !data.categoria_id ) {
             throw new AppException(
                 `Todos os campos obrigatórios devem ser fornecidos`,
                 ExceptionType.INVALID_PARAMS,
@@ -28,15 +26,14 @@ export class ItemService {
         }
 
         const result = await this.repository.insert(createData);
-        
         return {
-            ...createData,
-            id: result.insertId
+        ...createData,
+        id: result.insertId
         };
     }
 
-    async list(restaurante_id: number) {
-        const itens = await this.repository.findByRestauranteId(restaurante_id);
+    async list() {
+        const itens = await this.repository.findAll();
     
         return itens;
     }

@@ -108,6 +108,15 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `restaurante`.`categoria`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `restaurante`.`categoria` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
 -- Table `restaurante`.`item`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`item` (
@@ -115,12 +124,18 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`item` (
   `nome` VARCHAR(100) NOT NULL,
   `habilitado` TINYINT NOT NULL,
   `restaurante_id` INT NOT NULL,
-  `foto_item_url` VARCHAR(200) NOT NULL,
+  `categoria_id` INT NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_prato_restaurante1_idx` (`restaurante_id` ASC) VISIBLE,
+  INDEX `fk_item_categoria1_idx` (`categoria_id` ASC) VISIBLE,
   CONSTRAINT `fk_prato_restaurante1`
     FOREIGN KEY (`restaurante_id`)
     REFERENCES `restaurante`.`restaurante` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_item_categoria1`
+    FOREIGN KEY (`categoria_id`)
+    REFERENCES `restaurante`.`categoria` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -349,18 +364,18 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `restaurante`.`foto_item`
 -- -----------------------------------------------------
--- CREATE TABLE IF NOT EXISTS `restaurante`.`foto_item` (
---   `id` INT NOT NULL AUTO_INCREMENT,
---   `foto_url` VARCHAR(200) NOT NULL,
---   `item_id` INT NOT NULL,
---   PRIMARY KEY (`id`),
---   INDEX `fk_foto_item_item1_idx` (`item_id` ASC) VISIBLE,
---   CONSTRAINT `fk_foto_item_item1`
---     FOREIGN KEY (`item_id`)
---     REFERENCES `restaurante`.`item` (`id`)
---     ON DELETE NO ACTION
---     ON UPDATE NO ACTION)
--- ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `restaurante`.`foto_item` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `foto_url` VARCHAR(200) NOT NULL,
+  `item_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_foto_item_item1_idx` (`item_id` ASC) VISIBLE,
+  CONSTRAINT `fk_foto_item_item1`
+    FOREIGN KEY (`item_id`)
+    REFERENCES `restaurante`.`item` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

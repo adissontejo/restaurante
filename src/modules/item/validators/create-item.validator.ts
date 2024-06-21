@@ -8,6 +8,7 @@ export class CreateItemValidator extends BaseValidator {
       nome: z.string().min(1).max(100),
       habilitado: z.coerce.boolean(),
       restaurante_id: z.coerce.number().int().positive(),
+      categoria_id: z.coerce.number().int().positive(),
     });
   }
 }
