@@ -1,11 +1,11 @@
 import { BaseValidator } from 'src/core/validator.core';
 import { ZodSchema, z } from 'zod';
 
-export class CreateCategoriaValidator extends BaseValidator {
+export class CreatePedidoValidator extends BaseValidator {
   get schema(): ZodSchema {
     return z.object({
-      nome: z.string().min(3).max(100),
-      restauranteId: z.coerce.number().positive(),
+      numeroMesa: z.coerce.number().positive(),
+      observacao: z.string().max(400).nullish(),
     });
   }
 }

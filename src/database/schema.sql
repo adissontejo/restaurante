@@ -55,11 +55,12 @@ ENGINE = InnoDB;
 -- Table `restaurante`.`horario_restaurante`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`horario_restaurante` (
+  `id` INT NOT NULL AUTO_INCREMENT,
   `dia_semana` ENUM('dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab') NOT NULL,
   `abertura` TIME NOT NULL,
   `fechamento` TIME NOT NULL,
   `restaurante_id` INT NOT NULL,
-  PRIMARY KEY (`dia_semana`, `abertura`, `restaurante_id`),
+  PRIMARY KEY (`id`),
   CONSTRAINT `fk_HORARIOS_RESTAURANTE_RESTAURANTE`
     FOREIGN KEY (`restaurante_id`)
     REFERENCES `restaurante`.`restaurante` (`id`)
@@ -113,8 +114,16 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `restaurante`.`categoria` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) NOT NULL,
-  PRIMARY KEY (`id`))
+  `restaurante_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_categoria_restaurante1_idx` (`restaurante_id` ASC) VISIBLE,
+  CONSTRAINT `fk_categoria_restaurante1`
+    FOREIGN KEY (`restaurante_id`)
+    REFERENCES `restaurante`.`restaurante` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
+
 
 -- -----------------------------------------------------
 -- Table `restaurante`.`item`
@@ -123,16 +132,10 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`item` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) NOT NULL,
   `habilitado` TINYINT NOT NULL,
-  `restaurante_id` INT NOT NULL,
+  `foto_url` VARCHAR(200) NULL,
   `categoria_id` INT NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `fk_prato_restaurante1_idx` (`restaurante_id` ASC) VISIBLE,
   INDEX `fk_item_categoria1_idx` (`categoria_id` ASC) VISIBLE,
-  CONSTRAINT `fk_prato_restaurante1`
-    FOREIGN KEY (`restaurante_id`)
-    REFERENCES `restaurante`.`restaurante` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `fk_item_categoria1`
     FOREIGN KEY (`categoria_id`)
     REFERENCES `restaurante`.`categoria` (`id`)
@@ -151,6 +154,7 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`campo_formulario` (
   `qt_min_opcoes` INT NULL,
   `qt_max_opcoes` INT NULL,
   `item_id` INT NOT NULL,
+  `deletado` TINYINT NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_campo_formulario_item1_idx` (`item_id` ASC) VISIBLE,
   CONSTRAINT `fk_campo_formulario_item1`
@@ -356,23 +360,6 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`cupom` (
   CONSTRAINT `fk_cupom_restaurante1`
     FOREIGN KEY (`restaurante_id`)
     REFERENCES `restaurante`.`restaurante` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `restaurante`.`foto_item`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante`.`foto_item` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `foto_url` VARCHAR(200) NOT NULL,
-  `item_id` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_foto_item_item1_idx` (`item_id` ASC) VISIBLE,
-  CONSTRAINT `fk_foto_item_item1`
-    FOREIGN KEY (`item_id`)
-    REFERENCES `restaurante`.`item` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

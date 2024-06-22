@@ -1,3 +1,4 @@
-import { CreateItemDTO } from "./create-item.dto"
+import { CreateItemDTO } from './create-item.dto';
 
-export interface UpdateItemDTO extends Partial<CreateItemDTO> {}
+export interface UpdateItemDTO
+  extends Partial<Omit<CreateItemDTO, 'restauranteId' | 'categoriaId'>> {}

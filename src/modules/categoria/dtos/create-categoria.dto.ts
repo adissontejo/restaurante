@@ -1,3 +1,4 @@
 export interface CreateCategoriaDTO {
-    nome: string;
-  }
+  nome: string;
+  restauranteId: number;
+}

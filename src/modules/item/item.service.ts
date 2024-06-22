@@ -1,78 +1,130 @@
 import { Injectable } from '@nestjs/common';
 import { ItemRepository } from './item.repository';
-import { StorageService } from 'src/storage/storage.service';
 import { CreateItemDTO } from './dtos/create-item.dto';
-import { Item } from './item.entity';
+import { ItemWithRelations } from './item.entity';
 import { ItemMapper } from './mappers/item.mapper';
 import { UpdateItemDTO } from './dtos/update-item.dto';
 import { AppException, ExceptionType } from 'src/core/exception.core';
 import { Transaction } from 'src/decorators/transaction.decorator';
 import { removeUndefinedAndAssign } from 'src/utils/object';
+import { InstanciaItemService } from '../instancia-item/instancia-item.service';
+import { CategoriaService } from '../categoria/categoria.service';
+import { CampoFormularioService } from '../campo-formulario/campo-formulario.service';
+import { CampoFormularioWithRelations } from '../campo-formulario/campo-formulario.entity';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class ItemService {
-    constructor(private readonly repository: ItemRepository) {}
+  constructor(
+    private readonly repository: ItemRepository,
+    private readonly instanciaItemService: InstanciaItemService,
+    private readonly categoriaService: CategoriaService,
+    private readonly campoFormularioService: CampoFormularioService,
+    private readonly storageService: StorageService,
+  ) {}
 
-    @Transaction()
-    async create(data: CreateItemDTO): Promise<Item>{
-        const createData = ItemMapper.fromCreateDTOToEntity(data)
-    
-        if (!data.nome || !data.habilitado 
-            || !data.restaurante_id || !data.categoria_id ) {
-            throw new AppException(
-                `Todos os campos obrigatórios devem ser fornecidos`,
-                ExceptionType.INVALID_PARAMS,
-            )
-        }
+  @Transaction()
+  async create(data: CreateItemDTO): Promise<ItemWithRelations> {
+    await this.categoriaService.getById(data.categoriaId);
 
-        const result = await this.repository.insert(createData);
-        return {
-        ...createData,
-        id: result.insertId
-        };
+    const createData = ItemMapper.fromCreateDTOToEntity(data);
+
+    if (data.foto) {
+      createData.foto_url = await this.storageService.uploadFile(data.foto);
     }
 
-    async list() {
-        const itens = await this.repository.findAll();
-    
-        return itens;
+    const result = await this.repository.insert(createData);
+
+    let campos: CampoFormularioWithRelations[] = [];
+
+    if (data.campos) {
+      campos =
+        await this.campoFormularioService.unsafeSetCamposFormularioForItem(
+          result.insertId,
+          data.campos,
+        );
     }
 
-    async getById(id: number) {
-        const item = await this.repository.getById(id);
-    
-        if (!item) {
-          throw new AppException(
-            `Item com id ${id} não encontrado`,
-            ExceptionType.DATA_NOT_FOUND,
-          );
-        }
-    
-        return item;
+    const instanciaItem = await this.instanciaItemService.unsafeCreate({
+      itemId: result.insertId,
+      preco: data.preco,
+    });
+
+    return {
+      ...createData,
+      id: result.insertId,
+      instancia_ativa: instanciaItem,
+      campos,
+    };
+  }
+
+  async list(restauranteId: number) {
+    const itens = await this.repository.findByRestauranteId(restauranteId);
+
+    return itens;
+  }
+
+  async getById(id: number) {
+    const item = await this.repository.getById(id);
+
+    if (!item) {
+      throw new AppException(
+        `Item com id ${id} não encontrado`,
+        ExceptionType.DATA_NOT_FOUND,
+      );
     }
 
-    @Transaction()
-    async updateById(
-        id: number,
-        data: UpdateItemDTO
-    ): Promise<Item> {
-        const item = await this.getById(id);
-        const updateData = ItemMapper.fromUpdateDTOToEntity(data);
-    
-        await this.repository.updateById(item.id, updateData);
+    return item;
+  }
 
-        removeUndefinedAndAssign(item, updateData);
+  @Transaction()
+  async updateById(
+    id: number,
+    data: UpdateItemDTO,
+  ): Promise<ItemWithRelations> {
+    const item = await this.getById(id);
 
-        return {
-            ...item
-          };
+    const updateData = ItemMapper.fromUpdateDTOToEntity(data);
+
+    if (data.foto) {
+      if (item.foto_url) {
+        await this.storageService.deleteFile(item.foto_url);
+      }
+
+      updateData.foto_url = await this.storageService.uploadFile(data.foto);
     }
 
-    @Transaction()
-    async deleteById(id: number) {
-        const item = await this.getById(id);
+    await this.repository.updateById(item.id, updateData);
 
-        await this.repository.deleteById(id);
+    let instanciaItem = item.instancia_ativa;
+    let campos = item.campos;
+
+    if (data.preco) {
+      instanciaItem = await this.instanciaItemService.unsafeCreate({
+        itemId: id,
+        preco: data.preco,
+      });
     }
-    
+
+    if (data.campos) {
+      campos =
+        await this.campoFormularioService.unsafeSetCamposFormularioForItem(
+          id,
+          data.campos,
+        );
+    }
+
+    removeUndefinedAndAssign(item, updateData);
+
+    return {
+      ...item,
+      instancia_ativa: instanciaItem,
+      campos,
+    };
+  }
+
+  @Transaction()
+  async deleteById(id: number) {
+    await this.repository.deleteById(id);
+  }
 }
