@@ -7,5 +7,5 @@ export interface Categoria {
 }
 
 export interface CategoriaWithRelations extends Categoria {
-  itens: Omit<ItemWithRelations, 'campos'>[];
+  itens: Omit<ItemWithRelations, 'campos' | 'categoria'>[];
 }

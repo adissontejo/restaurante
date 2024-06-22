@@ -5,21 +5,22 @@ import { Transaction } from 'src/decorators/transaction.decorator';
 import { compareTimes } from 'src/utils/time';
 import { HorarioRestaurante } from './horario-restaurante.entity';
 import { HorarioRestauranteMapper } from './mappers/horario-restaurante.mapper';
+import { Restaurante } from '../restaurante/restaurante.entity';
 
 @Injectable()
 export class HorarioRestauranteService {
   constructor(private readonly repository: HorarioRestauranteRepository) {}
 
   @Transaction()
-  async unsafeSetHorariosForRestaurante(
-    restauranteId: number,
+  async setHorariosForRestaurante(
+    restaurante: Restaurante,
     data: CreateHorarioRestaurateDTO[],
   ) {
-    await this.deleteHorariosFromRestaurante(restauranteId);
+    await this.repository.deleteByRestaurante(restaurante.id);
 
     const horarios = data
       .map((item) =>
-        HorarioRestauranteMapper.fromCreateDTOToEntity(item, restauranteId),
+        HorarioRestauranteMapper.fromCreateDTOToEntity(item, restaurante.id),
       )
       .sort((a, b) => {
         if (a.dia_semana !== b.dia_semana) {
@@ -46,9 +47,5 @@ export class HorarioRestauranteService {
     await this.repository.insertMany(horarios);
 
     return horarios;
-  }
-
-  async deleteHorariosFromRestaurante(restauranteId: number) {
-    await this.repository.deleteByRestaurante(restauranteId);
   }
 }

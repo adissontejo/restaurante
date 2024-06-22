@@ -9,45 +9,44 @@ import { Funcionario, FuncionarioWithRelations } from './funcionario.entity';
 import { Restaurante } from '../restaurante/restaurante.entity';
 import { Usuario } from '../usuario/usuario.entity';
 import { groupArray } from 'src/utils/array';
-import { ExceptionType } from 'src/core/exception.core';
 
 @Injectable()
 export class FuncionarioRepository {
-    constructor(private readonly db: Database) {}
+  constructor(private readonly db: Database) {}
 
-    async insert(funcionario: Omit<Funcionario, 'id'>) {
-      const result = await this.db.query(`
+  async insert(funcionario: Omit<Funcionario, 'id'>) {
+    const result = await this.db.query(`
         INSERT INTO funcionario ${generateInsertBody(funcionario)}
       `);
 
-      return result;
-    }
+    return result;
+  }
 
-    async updateById(id: number, funcionario: Omit<Partial<Funcionario>, 'id'>) {
-      const result = await this.db.query(`
+  async updateById(id: number, funcionario: Omit<Partial<Funcionario>, 'id'>) {
+    const result = await this.db.query(`
         UPDATE funcionario
         SET
         ${generateUpdateSetters(funcionario)}
         WHERE id = ${inject(id)}
       `);
 
-      return result;
-    }
+    return result;
+  }
 
-    async deleteById(id: number) {
-      const result = await this.db.query(`
+  async deleteById(id: number) {
+    const result = await this.db.query(`
         DELETE
         FROM funcionario
         WHERE id = ${inject(id)}
       `);
 
-      return result;
-    }
+    return result;
+  }
 
-    private async baseSelect(sql: string = '') {
-        const rows = await this.db.query<
-          { f: Funcionario; u: Usuario;  r: Restaurante; }[]
-        >(`
+  private async baseSelect(sql: string = '') {
+    const rows = await this.db.query<
+      { f: Funcionario; u: Usuario; r: Restaurante }[]
+    >(`
           SELECT *
           FROM funcionario f
           JOIN usuario u
@@ -55,48 +54,47 @@ export class FuncionarioRepository {
           ${sql}
         `);
 
-        return groupArray(rows, {
-          by(item) {
-            return item.f.id;
-          },
-          format(group) {
-            const funcionario: FuncionarioWithRelations = {
-              ...group[0].f,
-              usuario: group[0].u
-            };
+    return groupArray(rows, {
+      by(item) {
+        return item.f.id;
+      },
+      format(group) {
+        const funcionario: FuncionarioWithRelations = {
+          ...group[0].f,
+          usuario: group[0].u,
+        };
 
-            return funcionario;
-          },
-        });
+        return funcionario;
+      },
+    });
+  }
+
+  async findAll() {
+    const funcionarios = await this.baseSelect();
+
+    return funcionarios;
+  }
+
+  async getById(id: number) {
+    const [funcionario] = await this.baseSelect(`WHERE f.id = ${inject(id)}`);
+
+    if (!funcionario) {
+      return null;
     }
 
-    async findAll() {
-      const funcionarios = await this.baseSelect();
+    return funcionario;
+  }
 
-      return funcionarios;
-    }
-
-    async getById(id: number) {
-      const [funcionario] = await this.baseSelect(`WHERE f.id = ${inject(id)}`);
-
-      if (!funcionario) {
-        return null;
-      }
-
-      return funcionario;
-    }
-
-    async getByUsuarioRestaurante(usuarioId: number, restauranteId: number){
-
-        const [restaurante] = await this.baseSelect(
-            `WHERE f.restaurante_id = ${inject(restauranteId)}
+  async getByUsuarioRestaurante(usuarioId: number, restauranteId: number) {
+    const [restaurante] = await this.baseSelect(
+      `WHERE f.restaurante_id = ${inject(restauranteId)}
             AND f.usuario_id = ${inject(usuarioId)}`,
-        );
+    );
 
-        if (!restaurante) {
-            return null;
-        }
-
-        return restaurante;
+    if (!restaurante) {
+      return null;
     }
+
+    return restaurante;
+  }
 }

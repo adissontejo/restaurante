@@ -14,4 +14,14 @@ export class OpcaoRepository {
 
     return result;
   }
+
+  async getById(id: number) {
+    const result = await this.db.query<{ o: Opcao }>(`
+      SELECT *
+      FROM opcao o
+      WHERE id = ${id}
+    `);
+
+    return result.o;
+  }
 }

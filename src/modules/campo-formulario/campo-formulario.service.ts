@@ -6,6 +6,7 @@ import { CampoFormularioMapper } from './mapper/campo-formulario.mapper';
 import { Transaction } from 'src/decorators/transaction.decorator';
 import { OpcaoService } from '../opcao/opcao.service';
 import { Opcao } from '../opcao/opcao.entity';
+import { Item } from '../item/item.entity';
 
 @Injectable()
 export class CampoFormularioService {
@@ -15,14 +16,17 @@ export class CampoFormularioService {
   ) {}
 
   @Transaction()
-  async unsafeSetCamposFormularioForItem(
-    itemId: number,
+  async setCamposFormularioForItem(
+    item: Item,
     data: CreateCampoFormularioDTO[],
   ) {
-    await this.repository.setDeletadoForItemId(itemId);
+    await this.repository.setDeletadoForItemId(item.id);
 
-    const camposFormulario = data.map((item) =>
-      CampoFormularioMapper.fromCreateDTOToEntity({ ...item, itemId }),
+    const camposFormulario = data.map((campo) =>
+      CampoFormularioMapper.fromCreateDTOToEntity({
+        ...campo,
+        itemId: item.id,
+      }),
     );
 
     if (!camposFormulario.length) {
@@ -31,11 +35,11 @@ export class CampoFormularioService {
 
     const result = await this.repository.insertMany(camposFormulario);
 
-    const opcoesPromises = data.map((item, index) => {
-      if (item.opcoes) {
+    const opcoesPromises = data.map((campo, index) => {
+      if (campo.opcoes) {
         return this.opcaoService.unsafeCreateOpcoesForCampoFormularioId(
           result.insertId + index,
-          item.opcoes,
+          campo.opcoes,
         );
       }
 
@@ -45,10 +49,11 @@ export class CampoFormularioService {
     const opcoes = await Promise.all(opcoesPromises);
 
     return camposFormulario.map<CampoFormularioWithRelations>(
-      (item, index) => ({
-        ...item,
+      (campo, index) => ({
+        ...campo,
         id: result.insertId + index,
         opcoes: opcoes[index],
+        item,
       }),
     );
   }

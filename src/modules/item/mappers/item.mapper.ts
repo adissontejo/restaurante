@@ -1,6 +1,9 @@
 import { CampoFormularioMapper } from 'src/modules/campo-formulario/mapper/campo-formulario.mapper';
 import { CreateItemDTO } from '../dtos/create-item.dto';
-import { ItemResponseDTO } from '../dtos/item-response.dto';
+import {
+  ItemResponseDTO,
+  ItemResponseWithoutInstanciaDTO,
+} from '../dtos/item-response.dto';
 import { UpdateItemDTO } from '../dtos/update-item.dto';
 import { Item, ItemWithRelations } from '../item.entity';
 import { InstanciaItemMapper } from 'src/modules/instancia-item/mappers/instancia-item.mapper';
@@ -27,16 +30,24 @@ export abstract class ItemMapper {
     };
   }
 
-  static fromEntityToResponseDTO(data: ItemWithRelations): ItemResponseDTO {
+  static fromEntityToResponseWithoutInstanciaDTO(
+    data: Omit<ItemWithRelations, 'instancia_ativa' | 'campos'>,
+  ): ItemResponseWithoutInstanciaDTO {
     return {
       id: data.id,
       nome: data.nome,
       habilitado: data.habilitado,
-      campos: data.campos?.map(CampoFormularioMapper.fromEntityToResponseDTO),
+      fotoUrl: data.foto_url || null,
+    };
+  }
+
+  static fromEntityToResponseDTO(data: ItemWithRelations): ItemResponseDTO {
+    return {
+      ...this.fromEntityToResponseWithoutInstanciaDTO(data),
       instanciaAtiva: InstanciaItemMapper.fromEntityToResponseDTO(
         data.instancia_ativa,
       ),
-      fotoUrl: data.foto_url || null,
+      campos: data.campos.map(CampoFormularioMapper.fromEntityToResponseDTO),
     };
   }
 }

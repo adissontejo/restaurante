@@ -10,6 +10,7 @@ export abstract class RestauranteMapper {
   ): Omit<Restaurante, 'id'> {
     return {
       nome: data.nome,
+      descricao: data.descricao,
       dominio: data.dominio,
       numero: data.numero,
       rua: data.rua,
@@ -41,14 +42,15 @@ export abstract class RestauranteMapper {
     return {
       id: data.id,
       nome: data.nome,
+      descricao: data.descricao || null,
       dominio: data.dominio,
       rua: data.rua,
       numero: data.numero,
       complemento: data.complemento || null,
-      cep: data.cep.cep,
-      bairro: data.cep.bairro,
-      cidade: data.cep.cidade,
-      estado: data.cep.estado,
+      cep: data.endereco_cep.cep,
+      bairro: data.endereco_cep.bairro,
+      cidade: data.endereco_cep.cidade,
+      estado: data.endereco_cep.estado,
       qtPedidosFidelidade: data.qt_pedidos_fidelidade || null,
       valorFidelidade: data.valor_fidelidade || null,
       logoUrl: data.logo_url || null,

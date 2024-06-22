@@ -6,6 +6,7 @@ import {
 } from 'src/utils/sql';
 import { Database } from 'src/database/database.service';
 import { Usuario } from './usuario.entity';
+import { Funcionario } from '../funcionario/funcionario.entity';
 
 @Injectable()
 export class UsuarioRepository {
@@ -74,5 +75,27 @@ export class UsuarioRepository {
     }
 
     return usuario;
+  }
+
+  async getWithFuncionarioByEmailAndRestaurante(
+    email: string,
+    restauranteId: number,
+  ) {
+    const [data] = await this.db.query<{ u: Usuario; f: Funcionario }[]>(`
+      SELECT *
+      FROM usuario u
+      LEFT JOIN funcionario f
+      WHERE u.email = ${inject(email)}
+      AND f.restaurante_id = ${inject(restauranteId)}
+    `);
+
+    if (!data) {
+      return null;
+    }
+
+    return {
+      usuario: data.u,
+      funcionario: data.f,
+    };
   }
 }

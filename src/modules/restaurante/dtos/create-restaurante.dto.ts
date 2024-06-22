@@ -2,6 +2,7 @@ import { CreateHorarioRestaurateDTO } from 'src/modules/horario-restaurante/dtos
 
 export interface CreateRestauranteDTO {
   nome: string;
+  descricao?: string;
   rua: string;
   numero: number;
   cep: string;

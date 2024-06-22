@@ -1,3 +1,4 @@
+import { Item } from '../item/item.entity';
 import { Opcao } from '../opcao/opcao.entity';
 
 export enum TipoCampo {
@@ -16,5 +17,6 @@ export interface CampoFormulario {
 }
 
 export interface CampoFormularioWithRelations extends CampoFormulario {
+  item: Item;
   opcoes: Opcao[];
 }

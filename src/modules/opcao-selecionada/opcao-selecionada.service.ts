@@ -1,81 +1,64 @@
 import { Injectable } from '@nestjs/common';
-import { AppException, ExceptionType } from 'src/core/exception.core';
 import { Transaction } from 'src/decorators/transaction.decorator';
-import { removeUndefinedAndAssign } from 'src/utils/object';
-import { OpSelecionadaRepository } from './opcao-selecionada.repository';
-import { CreateOpSelecionadaDTO } from './dto/create-opcao-selecionada.dto';
-import { OpSelecionada } from './opcao-selecionada.entity';
-import { OpSelecionadaMapper } from './mapper/opcao-selecionada.mapper';
-import { UpdateOpSelecionadaDTO } from './dto/update-opcao-selecionada.dto';
+import { OpcaoSelecionadaRepository } from './opcao-selecionada.repository';
+import {
+  OpcaoSelecionada,
+  OpcaoSelecionadaWithRelations,
+} from './opcao-selecionada.entity';
+import {
+  RespostaCampoFormulario,
+  RespostaCampoFormularioWithRelations,
+} from '../resposta-campo-formulario/resposta-campo-formulario.entity';
+import { AppException, ExceptionType } from 'src/core/exception.core';
+import { Opcao } from '../opcao/opcao.entity';
+import { groupArray } from 'src/utils/array';
 
 @Injectable()
-export class OpSelecionadaService {
-    constructor(
-        private readonly repository: OpSelecionadaRepository,
-    ) {}
+export class OpcaoSelecionadaService {
+  constructor(private readonly repository: OpcaoSelecionadaRepository) {}
 
-    @Transaction()
-    async create(data: CreateOpSelecionadaDTO): Promise<OpSelecionada> {
-        const createData = OpSelecionadaMapper.fromCreateDTOToEntity(data)
+  @Transaction()
+  async createManyForResposta(
+    respostaCampoFormulario: RespostaCampoFormulario &
+      Pick<RespostaCampoFormularioWithRelations, 'campo_formulario'>,
+    opcoesIds: number[],
+  ) {
+    const entities = opcoesIds.map<OpcaoSelecionada>((item) => ({
+      resposta_campo_formulario_id: respostaCampoFormulario.id,
+      opcao_id: item,
+    }));
 
-        console.log(createData)
-        
-        if (!data.resposta_campo_formulario_id || !data.opcao_id ) {
-            throw new AppException(
-                `Todos os campos obrigatórios devem ser fornecidos`,
-                ExceptionType.INVALID_PARAMS,
-            )
-        }
+    const groups = groupArray(opcoesIds, {
+      by(item) {
+        return item;
+      },
+    });
 
-        const result = await this.repository.insert(createData);
-        
-        return {
-            ...createData,
-            id: result.insertId
-        };
+    if (groups.length !== opcoesIds.length) {
+      throw new AppException(
+        'Não pode selecionar a mesma opção mais de uma vez',
+        ExceptionType.INVALID_PARAMS,
+      );
     }
 
-    async list(resposta_campo_formulario_id: number) {
-        const ops = await this.repository.findByRespostaCampoFormularioId(resposta_campo_formulario_id);
-    
-        return ops;
+    const opcoes = opcoesIds.map((item) =>
+      respostaCampoFormulario.campo_formulario.opcoes.find(
+        (opcao) => opcao.id === item,
+      ),
+    );
+
+    if (opcoes.some((opcao) => !opcao)) {
+      throw new AppException(
+        'Opção não encontrada',
+        ExceptionType.DATA_NOT_FOUND,
+      );
     }
 
-    async getById(id: number) {
-        const ops = await this.repository.getById(id);
-    
-        if (!ops) {
-          throw new AppException(
-            `Opção Selecionada com id ${id} não encontrado`,
-            ExceptionType.DATA_NOT_FOUND,
-          );
-        }
-    
-        return ops;
-    }
+    await this.repository.insertMany(entities);
 
-    @Transaction()
-    async updateById(
-        id: number,
-        data: UpdateOpSelecionadaDTO
-    ): Promise<OpSelecionada> {
-        const ops = await this.getById(id);
-        const updateData = OpSelecionadaMapper.fromUpdateDTOToEntity(data);
-    
-        await this.repository.updateById(ops.id, updateData);
-
-        removeUndefinedAndAssign(ops, updateData);
-
-        return {
-            ...ops
-          };
-    }
-
-    @Transaction()
-    async deleteById(id: number) {
-        const ops = await this.getById(id);
-
-        await this.repository.deleteById(id);
-    }
-    
+    return entities.map<OpcaoSelecionadaWithRelations>((item, index) => ({
+      ...item,
+      opcao: opcoes[index] as Opcao,
+    }));
+  }
 }

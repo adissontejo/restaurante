@@ -9,3 +9,6 @@ export interface CampoFormularioResponseDTO {
   qtMaxOpcoes?: number;
   opcoes?: OpcaoResponseDTO[];
 }
+
+export interface CampoFormularioResponseWithoutOpcoesDTO
+  extends Omit<CampoFormularioResponseDTO, 'opcoes'> {}

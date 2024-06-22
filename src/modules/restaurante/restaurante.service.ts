@@ -30,19 +30,19 @@ export class RestauranteService {
       createData.logo_url = await this.storageService.uploadFile(data.logo);
     }
 
-    const cep = await this.cepService.createIfNotExists(data.cep);
+    const enderecoCep = await this.cepService.createIfNotExists(data.cep);
     const result = await this.repository.insert(createData);
 
     const horarios =
-      await this.horariosRestauranteService.unsafeSetHorariosForRestaurante(
-        result.insertId,
+      await this.horariosRestauranteService.setHorariosForRestaurante(
+        { ...createData, id: result.insertId },
         data.horarios,
       );
 
     return {
       ...createData,
       id: result.insertId,
-      cep,
+      endereco_cep: enderecoCep,
       horarios,
     };
   }
@@ -99,10 +99,10 @@ export class RestauranteService {
       await this.checkExistingDominio(data.dominio);
     }
 
-    let cep = restaurante.cep;
+    let enderecoCep = restaurante.endereco_cep;
 
-    if (data.cep && data.cep !== restaurante.cep.cep) {
-      cep = await this.cepService.createIfNotExists(data.cep);
+    if (data.cep && data.cep !== restaurante.cep) {
+      enderecoCep = await this.cepService.createIfNotExists(data.cep);
     }
 
     await this.repository.updateById(restaurante.id, updateData);
@@ -111,8 +111,8 @@ export class RestauranteService {
 
     if (data.horarios) {
       horarios =
-        await this.horariosRestauranteService.unsafeSetHorariosForRestaurante(
-          id,
+        await this.horariosRestauranteService.setHorariosForRestaurante(
+          restaurante,
           data.horarios,
         );
     }
@@ -121,7 +121,7 @@ export class RestauranteService {
 
     return {
       ...restaurante,
-      cep,
+      endereco_cep: enderecoCep,
       horarios,
     };
   }
@@ -133,8 +133,6 @@ export class RestauranteService {
     if (restaurante.logo_url) {
       await this.storageService.deleteFile(restaurante.logo_url);
     }
-
-    await this.horariosRestauranteService.deleteHorariosFromRestaurante(id);
 
     await this.repository.deleteById(id);
   }

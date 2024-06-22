@@ -13,26 +13,28 @@ import { FuncionarioWithRelations } from './funcionario.entity';
 @Injectable()
 export class FuncionarioService {
   constructor(
-        private readonly repository: FuncionarioRepository,
-        private readonly usarioService: UsuarioService,
-        private readonly restauranteService: RestauranteService,
+    private readonly repository: FuncionarioRepository,
+    private readonly usuarioService: UsuarioService,
+    private readonly restauranteService: RestauranteService,
   ) {}
 
   @Transaction()
   async create(data: CreateFuncionarioDTO): Promise<FuncionarioWithRelations> {
-
     const createData = FuncionarioMapper.fromCreateDTOToEntity(data);
 
     if (!data.cargo || !data.restauranteId || !data.usuarioId) {
-        throw new AppException(
-          `Todos os campos obrigatórios devem ser fornecidos`,
-          ExceptionType.INVALID_PARAMS,
-        );
+      throw new AppException(
+        `Todos os campos obrigatórios devem ser fornecidos`,
+        ExceptionType.INVALID_PARAMS,
+      );
     }
 
-    const usuario = await this.usarioService.getById(createData.usuario_id);
+    const usuario = await this.usuarioService.getById(createData.usuario_id);
     await this.restauranteService.getById(createData.restaurante_id);
-    await this.checkExistingFuncionarioInThisResturante(createData.usuario_id, createData.restaurante_id);
+    await this.checkExistingFuncionarioInThisResturante(
+      createData.usuario_id,
+      createData.restaurante_id,
+    );
 
     const result = await this.repository.insert(createData);
 
@@ -75,7 +77,7 @@ export class FuncionarioService {
     removeUndefinedAndAssign(funcionario, updateData);
 
     return {
-      ...funcionario
+      ...funcionario,
     };
   }
 
@@ -85,8 +87,14 @@ export class FuncionarioService {
   }
 
   @Transaction()
-  private async checkExistingFuncionarioInThisResturante(usuarioId: number, restauranteId: number) {
-    const existingFuncionario = await this.repository.getByUsuarioRestaurante(usuarioId, restauranteId);
+  private async checkExistingFuncionarioInThisResturante(
+    usuarioId: number,
+    restauranteId: number,
+  ) {
+    const existingFuncionario = await this.repository.getByUsuarioRestaurante(
+      usuarioId,
+      restauranteId,
+    );
 
     if (existingFuncionario) {
       throw new AppException(
@@ -94,5 +102,21 @@ export class FuncionarioService {
         ExceptionType.DATA_ALREADY_EXISTS,
       );
     }
+  }
+
+  async getByUsuarioAndRestaurante(usuarioId: number, restauranteId: number) {
+    const funcionario = await this.repository.getByUsuarioRestaurante(
+      usuarioId,
+      restauranteId,
+    );
+
+    if (!funcionario) {
+      throw new AppException(
+        'Funcionário não encontrado',
+        ExceptionType.DATA_NOT_FOUND,
+      );
+    }
+
+    return funcionario;
   }
 }

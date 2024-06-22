@@ -1,9 +1,9 @@
-import { Module } from "@nestjs/common";
-import { OpSelecionadaRepository } from "./opcao-selecionada.repository";
-import { OpSelecionadaService } from "./opcao-selecionada.service";
+import { Module } from '@nestjs/common';
+import { OpcaoSelecionadaRepository } from './opcao-selecionada.repository';
+import { OpcaoSelecionadaService } from './opcao-selecionada.service';
 
 @Module({
-    providers: [OpSelecionadaRepository, OpSelecionadaService],
-    exports: [OpSelecionadaService]
+  providers: [OpcaoSelecionadaRepository, OpcaoSelecionadaService],
+  exports: [OpcaoSelecionadaService],
 })
-export class OpSelecionadaModule {}
+export class OpcaoSelecionadaModule {}

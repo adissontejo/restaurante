@@ -8,6 +8,7 @@ export class CreateRestauranteValidator extends BaseValidator {
   get schema(): ZodSchema {
     return z.object({
       nome: z.string().min(3).max(100),
+      descricao: z.string().max(4000).nullish(),
       rua: z.string().min(3).max(100),
       numero: z.coerce.number().int().positive(),
       cep: z.coerce.string().regex(/^\d{8}$/),

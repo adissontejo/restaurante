@@ -4,6 +4,7 @@ import { HorarioRestaurante } from 'src/modules/horario-restaurante/horario-rest
 export interface Restaurante {
   id: number;
   nome: string;
+  descricao?: string;
   rua: string;
   numero: number;
   cep: string;
@@ -14,7 +15,7 @@ export interface Restaurante {
   valor_fidelidade?: number;
 }
 
-export interface RestauranteWithRelations extends Omit<Restaurante, 'cep'> {
-  cep: Cep;
+export interface RestauranteWithRelations extends Restaurante {
+  endereco_cep: Cep;
   horarios: HorarioRestaurante[];
 }

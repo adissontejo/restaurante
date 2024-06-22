@@ -6,8 +6,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Namespace } from 'socket.io';
-import { PedidosSocket, SocketRoom } from './dtos/pedidos-socket.dto';
+import { Namespace, Socket } from 'socket.io';
 import { CreatePedidoDTO } from './dtos/create-pedido.dto';
 import { PedidoService } from './pedido.service';
 import {
@@ -17,6 +16,12 @@ import {
 } from 'src/core/exception.core';
 import { CreatePedidoValidator } from './validators/create-pedido.validator';
 import { UseFilters } from '@nestjs/common';
+import { ConnectionType } from './dtos/pedidos-socket.dto';
+import { AuthService } from '../auth/auth.service';
+import { PedidoWithRelations } from './pedido.entity';
+import { UseAuthentication } from '../auth/decorators/use-authentication.decorator';
+import { GoogleUser } from '../auth/decorators/google-user.decorator';
+import { UserProfileDTO } from 'src/services/google';
 
 @WebSocketGateway({
   namespace: 'pedidos',
@@ -29,9 +34,12 @@ export class PedidoGateway implements OnGatewayConnection {
   @WebSocketServer()
   private readonly namespace: Namespace;
 
-  constructor(private readonly service: PedidoService) {}
+  constructor(
+    private readonly service: PedidoService,
+    private readonly authService: AuthService,
+  ) {}
 
-  private getRestauranteId(client: PedidosSocket) {
+  private getRestauranteId(client: Socket) {
     const restauranteId = Number(client.handshake.query.restauranteId);
 
     if (isNaN(restauranteId)) {
@@ -44,21 +52,25 @@ export class PedidoGateway implements OnGatewayConnection {
     return restauranteId;
   }
 
-  private getUsusarioId(client: PedidosSocket) {
-    const usuarioId = Number(client.handshake.query.usuarioId);
+  private getConnectionType(client: Socket) {
+    const connectionType = client.handshake.query
+      .connectionType as ConnectionType;
 
-    if (isNaN(usuarioId)) {
+    if (
+      !connectionType ||
+      !Object.values(ConnectionType).includes(connectionType)
+    ) {
       throw new AppException(
-        'usuarioId é necessário na query da conexão',
+        'connectionType é necessário na query da conexão',
         ExceptionType.INVALID_PARAMS,
       );
     }
 
-    return usuarioId;
+    return connectionType;
   }
 
   private broadcastToRoom(
-    client: PedidosSocket,
+    client: Socket,
     room: string,
     event: string,
     ...params: any[]
@@ -81,14 +93,32 @@ export class PedidoGateway implements OnGatewayConnection {
     });
   }
 
-  handleConnection(client: PedidosSocket) {
+  async handleConnection(client: Socket) {
     try {
       const restauranteId = this.getRestauranteId(client);
-      const usuarioId = this.getUsusarioId(client);
+      const connectionType = this.getConnectionType(client);
+      const user = await this.authService.verifyToken(
+        client.request.headers.authorization,
+        connectionType !== ConnectionType.FUNCIONARIO,
+      );
+
+      let pedidos: PedidoWithRelations[];
+
+      if (connectionType === ConnectionType.FUNCIONARIO) {
+        pedidos = await this.service.getByRestaurante(
+          restauranteId,
+          user?.email as string,
+        );
+      } else {
+        pedidos = await this.service.getByRestauranteAndUsuario(
+          restauranteId,
+          user?.email,
+        );
+      }
 
       client.join(`restaurante:${restauranteId}`);
-      client.join(`usuario:${usuarioId}`);
-      client.join(SocketRoom.EMPLOYEE);
+      client.join(connectionType);
+      client.emit('connection_response', { pedidos });
     } catch (err) {
       client.emit('connection_error', AppExceptionFilter.getBody(err));
 
@@ -97,21 +127,21 @@ export class PedidoGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('create')
+  @UseAuthentication({ optional: true })
   async create(
-    @ConnectedSocket() client: PedidosSocket,
+    @ConnectedSocket() client: Socket,
     @MessageBody(CreatePedidoValidator)
     dto: Omit<CreatePedidoDTO, 'usuarioId' | 'restauranteId'>,
+    @GoogleUser() user?: UserProfileDTO,
   ) {
     const restauranteId = this.getRestauranteId(client);
-    const usuarioId = this.getUsusarioId(client);
 
-    const pedido = await this.service.create({
+    const pedido = await this.service.create(user?.email, {
       ...dto,
       restauranteId,
-      usuarioId,
     });
 
-    this.broadcastToRoom(client, SocketRoom.EMPLOYEE, 'created', pedido);
+    this.broadcastToRoom(client, ConnectionType.FUNCIONARIO, 'created', pedido);
 
     client.emit('create_response', pedido);
   }

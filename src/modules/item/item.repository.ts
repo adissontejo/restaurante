@@ -13,6 +13,7 @@ import {
 } from '../campo-formulario/campo-formulario.entity';
 import { Opcao } from '../opcao/opcao.entity';
 import { groupArray } from 'src/utils/array';
+import { Categoria } from '../categoria/categoria.entity';
 
 @Injectable()
 export class ItemRepository {
@@ -49,17 +50,25 @@ export class ItemRepository {
 
   private async baseSelect(sql: string = '') {
     const base = await this.db.query<
-      { i: Item; ii: InstanciaItem; cf: CampoFormulario; o: Opcao }[]
+      {
+        i: Item;
+        c: Categoria;
+        ii: InstanciaItem;
+        cf: CampoFormulario;
+        o: Opcao;
+      }[]
     >(`
       SELECT *
       FROM item i
+      JOIN categoria c
+      ON i.categoria_id = c.id
       LEFT JOIN instancia_item ii
       ON i.id = ii.item_id AND ii.ativa = TRUE
       LEFT JOIN campo_formulario cf
       ON i.id = cf.item_id
+      AND cf.deletado = FALSE
       LEFT JOIN opcao o
       ON cf.id = o.campo_formulario_id
-      AND cf.deletado = FALSE
       ${sql}
     `);
 
@@ -71,12 +80,13 @@ export class ItemRepository {
         return {
           ...group[0].i,
           instancia_ativa: group[0].ii,
+          categoria: group[0].c,
           campos: group[0].cf.id
             ? groupArray(group, {
                 by(item) {
                   return item.cf.id;
                 },
-                format(group): CampoFormularioWithRelations {
+                format(group): Omit<CampoFormularioWithRelations, 'item'> {
                   return {
                     ...group[0].cf,
                     opcoes: group[0].o.id ? group.map((item) => item.o) : [],

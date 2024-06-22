@@ -9,3 +9,6 @@ export interface ItemResponseDTO {
   instanciaAtiva: InstanciaItemResponseDTO;
   fotoUrl: string | null;
 }
+
+export interface ItemResponseWithoutInstanciaDTO
+  extends Omit<ItemResponseDTO, 'instanciaAtiva' | 'campos'> {}

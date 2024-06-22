@@ -9,25 +9,14 @@ import { Request, Response } from 'express';
 import { Socket } from 'socket.io';
 import { AppException, ExceptionType } from 'src/core/exception.core';
 import { OptionalAuthentication } from '../decorators/optional-authentication.decorator';
-import { getUserProfile } from 'src/services/google';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class AuthInterceptor implements NestInterceptor {
-  constructor(private readonly reflector: Reflector) {}
-
-  async verifyToken(token?: string) {
-    if (!token) {
-      throw new AppException('Missing credentials', ExceptionType.UNAUTHORIZED);
-    }
-
-    try {
-      const profile = await getUserProfile(token);
-
-      return profile;
-    } catch (err) {
-      throw new AppException('Invalid credentials', ExceptionType.UNAUTHORIZED);
-    }
-  }
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly authService: AuthService,
+  ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler) {
     const optional = this.reflector.get(
@@ -41,9 +30,9 @@ export class AuthInterceptor implements NestInterceptor {
         const request = http.getRequest<Request>();
         const response = http.getResponse<Response>();
 
-        const token = request.headers['authorization']?.split(' ')?.[1];
+        const token = request.headers['authorization'];
 
-        const payload = await this.verifyToken(token);
+        const payload = await this.authService.verifyToken(token, optional);
 
         response.locals.user = payload;
       } else if (context.getType() === 'ws') {
@@ -52,7 +41,7 @@ export class AuthInterceptor implements NestInterceptor {
 
         const token = client.request.headers['authorization'];
 
-        const payload = await this.verifyToken(token);
+        const payload = await this.authService.verifyToken(token, optional);
 
         client.handshake.auth.user = payload;
       }

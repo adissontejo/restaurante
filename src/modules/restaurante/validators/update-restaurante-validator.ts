@@ -8,6 +8,7 @@ export class UpdateRestauranteValidator extends BaseValidator {
   get schema(): ZodSchema {
     return z.object({
       nome: z.string().min(3).max(100).optional(),
+      descricao: z.string().max(4000).nullish(),
       rua: z.string().min(3).max(100).optional(),
       numero: z.coerce.number().int().positive().optional(),
       cep: z.coerce

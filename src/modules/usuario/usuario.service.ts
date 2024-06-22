@@ -89,6 +89,22 @@ export class UsuarioService {
     return usuario;
   }
 
+  async getFuncionarioByEmail(email: string, restauranteId: number) {
+    const data = await this.repository.getWithFuncionarioByEmailAndRestaurante(
+      email,
+      restauranteId,
+    );
+
+    if (!data) {
+      throw new AppException(
+        `Usuário com email ${email} não encontrado`,
+        ExceptionType.DATA_NOT_FOUND,
+      );
+    }
+
+    return data;
+  }
+
   @Transaction()
   async updateById(id: number, data: UpdateUsuarioDTO): Promise<Usuario> {
     const usuario = await this.getById(id);

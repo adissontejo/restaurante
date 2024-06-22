@@ -3,6 +3,7 @@ import { HorarioRestauranteResponseDTO } from 'src/modules/horario-restaurante/d
 export interface RestauranteResponseDTO {
   id: number;
   nome: string;
+  descricao: string | null;
   rua: string;
   numero: number;
   cep: string;

@@ -11,6 +11,7 @@ import { StorageModule } from './storage/storage.module';
 import { ContaModule } from './modules/conta/conta.module';
 import { ItemModule } from './modules/item/item.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { PedidoModule } from './modules/pedido/pedido.module';
 
 @Global()
 @Module({
@@ -27,6 +28,7 @@ import { AuthModule } from './modules/auth/auth.module';
     CupomModule,
     ContaModule,
     ItemModule,
+    PedidoModule,
   ],
   providers: [
     {

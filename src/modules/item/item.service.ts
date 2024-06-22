@@ -25,7 +25,7 @@ export class ItemService {
 
   @Transaction()
   async create(data: CreateItemDTO): Promise<ItemWithRelations> {
-    await this.categoriaService.getById(data.categoriaId);
+    const categoria = await this.categoriaService.getById(data.categoriaId);
 
     const createData = ItemMapper.fromCreateDTOToEntity(data);
 
@@ -38,22 +38,22 @@ export class ItemService {
     let campos: CampoFormularioWithRelations[] = [];
 
     if (data.campos) {
-      campos =
-        await this.campoFormularioService.unsafeSetCamposFormularioForItem(
-          result.insertId,
-          data.campos,
-        );
+      campos = await this.campoFormularioService.setCamposFormularioForItem(
+        { ...createData, id: result.insertId },
+        data.campos,
+      );
     }
 
-    const instanciaItem = await this.instanciaItemService.unsafeCreate({
-      itemId: result.insertId,
-      preco: data.preco,
-    });
+    const instanciaItem = await this.instanciaItemService.createForItem(
+      { ...createData, id: result.insertId },
+      data.preco,
+    );
 
     return {
       ...createData,
       id: result.insertId,
       instancia_ativa: instanciaItem,
+      categoria,
       campos,
     };
   }
@@ -100,18 +100,17 @@ export class ItemService {
     let campos = item.campos;
 
     if (data.preco) {
-      instanciaItem = await this.instanciaItemService.unsafeCreate({
-        itemId: id,
-        preco: data.preco,
-      });
+      instanciaItem = await this.instanciaItemService.createForItem(
+        item,
+        data.preco,
+      );
     }
 
     if (data.campos) {
-      campos =
-        await this.campoFormularioService.unsafeSetCamposFormularioForItem(
-          id,
-          data.campos,
-        );
+      campos = await this.campoFormularioService.setCamposFormularioForItem(
+        item,
+        data.campos,
+      );
     }
 
     removeUndefinedAndAssign(item, updateData);

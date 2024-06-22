@@ -1,5 +1,7 @@
+import { Cargo } from '../funcionario.entity';
+
 export interface CreateFuncionarioDTO {
-    cargo: string;
-    usuarioId: number;
-    restauranteId: number;
+  cargo: Cargo;
+  usuarioId: number;
+  restauranteId: number;
 }

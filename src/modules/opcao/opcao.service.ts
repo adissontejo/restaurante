@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OpcaoRepository } from './opcao.repository';
 import { Opcao } from './opcao.entity';
 import { Transaction } from 'src/decorators/transaction.decorator';
+import { AppException, ExceptionType } from 'src/core/exception.core';
 
 @Injectable()
 export class OpcaoService {
@@ -27,5 +28,18 @@ export class OpcaoService {
       ...opcao,
       id: result.insertId + index,
     }));
+  }
+
+  async getById(id: number) {
+    const opcao = await this.repository.getById(id);
+
+    if (!opcao) {
+      throw new AppException(
+        `Opcao com id ${id} não encontrada`,
+        ExceptionType.DATA_NOT_FOUND,
+      );
+    }
+
+    return opcao;
   }
 }

@@ -1,6 +1,9 @@
-export const groupArray = <T, R>(
+export const groupArray = <T, R = T[]>(
   data: T[],
-  { by, format }: { by: (item: T) => any; format: (group: T[]) => R },
+  {
+    by,
+    format = (group) => group as R,
+  }: { by: (item: T) => any; format?: (group: T[]) => R },
 ) => {
   const map = new Map<any, T[]>();
 

@@ -1,11 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { Database } from 'src/database/database.service';
-import { Pedido } from './pedido.entity';
+import { Pedido, PedidoWithRelations } from './pedido.entity';
 import {
   generateInsertBody,
   generateUpdateSetters,
   inject,
 } from 'src/utils/sql';
+import { ItemPedido } from '../item-pedido/item-pedido.entity';
+import { RespostaCampoFormulario } from '../resposta-campo-formulario/resposta-campo-formulario.entity';
+import { OpcaoSelecionada } from '../opcao-selecionada/opcao-selecionada.entity';
+import { InstanciaItem } from '../instancia-item/instancia-item.entity';
+import { Item } from '../item/item.entity';
+import { CampoFormulario } from '../campo-formulario/campo-formulario.entity';
+import { Opcao } from '../opcao/opcao.entity';
+import { groupArray } from 'src/utils/array';
 
 @Injectable()
 export class PedidoRepository {
@@ -34,6 +42,116 @@ export class PedidoRepository {
       DELETE FROM pedido
       WHERE id = ${inject(id)}
     `);
+
+    return result;
+  }
+
+  async baseSelect(sql: string = '') {
+    const result = await this.db.query<
+      {
+        p: Pedido;
+        ip: ItemPedido;
+        ii: InstanciaItem;
+        i: Item;
+        rcp: RespostaCampoFormulario;
+        cf: CampoFormulario;
+        os: OpcaoSelecionada;
+        o: Opcao;
+      }[]
+    >(`
+      SELECT *
+      FROM pedido p
+      JOIN item_pedido ip
+      ON p.id = ip.pedido_id
+      JOIN instancia_item ii
+      ON ip.instancia_item_id = ii.id
+      JOIN item i
+      ON ii.item_id = i.id
+      LEFT JOIN resposta_campo_formulario rcp
+      ON ip.id = rcp.item_pedido_id
+      LEFT JOIN campo_formulario cf
+      ON rcp.campo_formulario_id = cf.id
+      LEFT JOIN opcao_selecionada os
+      ON rcp.id = os.resposta_campo_formulario_id
+      LEFT JOIN opcao o
+      ON os.opcao_id = o.id
+      ${sql}
+    `);
+
+    return groupArray(result, {
+      by(item) {
+        return item.p.id;
+      },
+      format(group): PedidoWithRelations {
+        return {
+          ...group[0].p,
+          itens: groupArray(group, {
+            by(item) {
+              return item.ip.id;
+            },
+            format(group) {
+              return {
+                ...group[0].ip,
+                instancia_item: {
+                  ...group[0].ii,
+                  item: group[0].i,
+                },
+                respostas: groupArray(group, {
+                  by(item) {
+                    return item.rcp.id;
+                  },
+                  format(group) {
+                    return {
+                      ...group[0].rcp,
+                      campo_formulario: group[0].cf,
+                      opcoes: group.map((item) => ({
+                        ...item.os,
+                        opcao: item.o,
+                      })),
+                    };
+                  },
+                }),
+              };
+            },
+          }),
+        };
+      },
+    });
+  }
+
+  async getByRestauranteId(restauranteId: number) {
+    const result = await this.baseSelect(
+      `WHERE restaurante_id = ${inject(restauranteId)}`,
+    );
+
+    return result;
+  }
+
+  async getByRestauranteAndUsuarioId(
+    restauranteId: number,
+    usuarioId: number = -1,
+    unloggedIds: number[] = [],
+  ) {
+    const result = await this.baseSelect(`
+      WHERE restaurante_id = ${inject(restauranteId)}
+      AND (
+        usuario_id = ${usuarioId}
+        OR (
+          usuario_id IS NULL
+          AND id IN ${inject(unloggedIds)}
+        )
+      )
+    `);
+
+    return result;
+  }
+
+  async getById(id: number) {
+    const [result] = await this.baseSelect(`WHERE id = ${id}`);
+
+    if (!result) {
+      return null;
+    }
 
     return result;
   }

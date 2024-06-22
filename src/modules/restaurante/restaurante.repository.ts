@@ -63,7 +63,7 @@ export class RestauranteRepository {
       format(group) {
         const restaurante: RestauranteWithRelations = {
           ...group[0].r,
-          cep: group[0].c,
+          endereco_cep: group[0].c,
           horarios:
             group[0].hr.abertura !== null ? group.map((item) => item.hr) : [],
         };
