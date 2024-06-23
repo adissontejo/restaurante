@@ -69,8 +69,11 @@ export class FuncionarioRepository {
     });
   }
 
-  async findAll() {
-    const funcionarios = await this.baseSelect();
+  async findByRestaurante(restauranteId: number, usuarioId?: number) {
+    const funcionarios = await this.baseSelect(`
+      WHERE f.restaurante_id = ${restauranteId}
+      ${(usuarioId && `AND f.usuario_id = ${usuarioId}`) || ''}
+    `);
 
     return funcionarios;
   }

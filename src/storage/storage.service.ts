@@ -24,7 +24,7 @@ export class StorageService {
   constructor(private readonly configService: ConfigService) {}
 
   get uploadUrl() {
-    return this.configService.get('UPLOAD_BASE_URL');
+    return `${this.configService.get('SERVER_URL')}/storage`;
   }
 
   private getFilePath(fileName: string) {

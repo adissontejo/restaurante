@@ -26,10 +26,8 @@ export class PedidoService {
     usuarioEmail: string | undefined,
     data: Omit<CreatePedidoDTO, 'usuarioId'>,
   ): Promise<PedidoWithRelations> {
-    const restaurante = await this.restauranteService.getById(
-      data.restauranteId,
-    );
-    const funcionario = await this.funcionarioService.getById(1);
+    await this.restauranteService.getById(data.restauranteId);
+    await this.funcionarioService.getById(1);
 
     let usuario: Usuario | undefined = undefined;
 
@@ -74,6 +72,7 @@ export class PedidoService {
     return this.repository.getByRestauranteId(restauranteId);
   }
 
+  @Transaction()
   async getByRestauranteAndUsuario(
     restauranteId: number,
     usuarioEmail?: string,
@@ -90,5 +89,37 @@ export class PedidoService {
       usuario?.id,
       unloggedIds,
     );
+  }
+
+  async getById(id: number) {
+    const pedido = await this.repository.getById(id);
+
+    if (!pedido) {
+      throw new AppException(
+        'Pedido não encontrado',
+        ExceptionType.DATA_NOT_FOUND,
+      );
+    }
+
+    return pedido;
+  }
+
+  @Transaction()
+  async start(id: number, restauranteId: number): Promise<PedidoWithRelations> {
+    const pedido = await this.getById(id);
+
+    if (pedido.restaurante_id !== restauranteId) {
+      throw new AppException(
+        'Pedido não encontrado',
+        ExceptionType.DATA_NOT_FOUND,
+      );
+    }
+
+    await this.repository.setIniciadoById(id);
+
+    return {
+      ...pedido,
+      iniciado: true,
+    };
   }
 }

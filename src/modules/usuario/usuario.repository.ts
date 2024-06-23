@@ -85,6 +85,7 @@ export class UsuarioRepository {
       SELECT *
       FROM usuario u
       LEFT JOIN funcionario f
+      ON u.id = f.usuario_id
       WHERE u.email = ${inject(email)}
       AND f.restaurante_id = ${inject(restauranteId)}
     `);

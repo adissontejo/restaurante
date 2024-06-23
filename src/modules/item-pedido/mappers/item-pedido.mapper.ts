@@ -1,7 +1,11 @@
 import { InstanciaItemMapper } from 'src/modules/instancia-item/mappers/instancia-item.mapper';
 import { CreateItemPedidoDTO } from '../dtos/create-item-pedido.dto';
 import { ItemPedidoResponseDTO } from '../dtos/item-pedido-response.dto';
-import { ItemPedido, ItemPedidoWithRelations } from '../item-pedido.entity';
+import {
+  ItemPedido,
+  ItemPedidoWithRelations,
+  StatusItemPedido,
+} from '../item-pedido.entity';
 import { RespostaCampoFormularioMapper } from 'src/modules/resposta-campo-formulario/mappers/resposta-campo-formulario.mapper';
 
 export abstract class ItemPedidoMapper {
@@ -13,6 +17,7 @@ export abstract class ItemPedidoMapper {
       quantidade: data.quantidade,
       observacao: data.observacao,
       instancia_item_id: data.instanciaItemId,
+      status: StatusItemPedido.PREPARANDO,
     };
   }
 
@@ -29,6 +34,7 @@ export abstract class ItemPedidoMapper {
       respostas: data.respostas.map(
         RespostaCampoFormularioMapper.fromEntityToResponseDTO,
       ),
+      status: data.status,
     };
   }
 }

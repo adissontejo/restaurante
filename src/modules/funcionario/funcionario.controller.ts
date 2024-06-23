@@ -7,7 +7,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
-  UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { FuncionarioService } from './funcionario.service';
 import { CreateFuncionarioDTO } from './dtos/create-funcionario.dto';
@@ -15,24 +15,25 @@ import { CreateFuncionarioValidator } from './validators/create-funcionario.vali
 import { UpdateFuncionarioDTO } from './dtos/update-funcionario.dto';
 import { UpdateFuncionarioValidator } from './validators/update-funcionario-validator';
 import { FuncionarioMapper } from './mappers/funcionario.mapper';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('/funcionarios')
 export class FuncionarioController {
   constructor(private readonly service: FuncionarioService) {}
 
   @Post()
-  async create(
-    @Body(CreateFuncionarioValidator) data: CreateFuncionarioDTO
-  ) {
+  async create(@Body(CreateFuncionarioValidator) data: CreateFuncionarioDTO) {
     const funcionario = await this.service.create(data);
 
     return FuncionarioMapper.fromEntityToResponseDTO(funcionario);
   }
 
   @Get()
-  async list() {
-    const funcionarios = await this.service.list();
+  async list(
+    @Query('restauranteId', ParseIntPipe) restauranteId: number,
+    @Query('usuarioId', new ParseIntPipe({ optional: true }))
+    usuarioId?: number,
+  ) {
+    const funcionarios = await this.service.list(restauranteId, usuarioId);
 
     return funcionarios.map(FuncionarioMapper.fromEntityToResponseDTO);
   }
@@ -47,10 +48,10 @@ export class FuncionarioController {
   @Put('/:id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body(UpdateFuncionarioValidator) data:UpdateFuncionarioDTO
+    @Body(UpdateFuncionarioValidator) data: UpdateFuncionarioDTO,
   ) {
     const funcionario = await this.service.updateById(id, {
-      ...data
+      ...data,
     });
 
     return FuncionarioMapper.fromEntityToResponseDTO(funcionario);

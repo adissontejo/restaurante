@@ -120,9 +120,10 @@ export class PedidoRepository {
   }
 
   async getByRestauranteId(restauranteId: number) {
-    const result = await this.baseSelect(
-      `WHERE restaurante_id = ${inject(restauranteId)}`,
-    );
+    const result = await this.baseSelect(`
+      WHERE restaurante_id = ${inject(restauranteId)}
+      ORDER BY data_hora DESC
+    `);
 
     return result;
   }
@@ -133,25 +134,36 @@ export class PedidoRepository {
     unloggedIds: number[] = [],
   ) {
     const result = await this.baseSelect(`
-      WHERE restaurante_id = ${inject(restauranteId)}
+      WHERE p.restaurante_id = ${inject(restauranteId)}
       AND (
-        usuario_id = ${usuarioId}
+        p.usuario_id = ${usuarioId}
         OR (
-          usuario_id IS NULL
-          AND id IN ${inject(unloggedIds)}
+          p.usuario_id IS NULL
+          AND p.id IN (${inject(unloggedIds)})
         )
       )
+      ORDER BY data_hora DESC
     `);
 
     return result;
   }
 
   async getById(id: number) {
-    const [result] = await this.baseSelect(`WHERE id = ${id}`);
+    const [result] = await this.baseSelect(`WHERE p.id = ${id}`);
 
     if (!result) {
       return null;
     }
+
+    return result;
+  }
+
+  async setIniciadoById(id: number) {
+    const result = await this.db.query(`
+      UPDATE pedido
+      SET iniciado = TRUE
+      WHERE id = ${inject(id)}
+    `);
 
     return result;
   }

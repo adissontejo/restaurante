@@ -5,7 +5,10 @@ import { CreateItemPedidoDTO } from './dtos/create-item-pedido.dto';
 import { ItemPedidoMapper } from './mappers/item-pedido.mapper';
 import { ItemPedidoRepository } from './item-pedido.repository';
 import { RespostaCampoFormularioService } from '../resposta-campo-formulario/resposta-campo-formulario.service';
-import { ItemPedidoWithRelations } from './item-pedido.entity';
+import {
+  ItemPedidoWithRelations,
+  StatusItemPedido,
+} from './item-pedido.entity';
 import { RespostaCampoFormularioWithRelations } from '../resposta-campo-formulario/resposta-campo-formulario.entity';
 import { Injectable } from '@nestjs/common';
 
@@ -73,5 +76,13 @@ export class ItemPedidoService {
       instancia_item: instanciaItems[index],
       respostas: respostas[index],
     }));
+  }
+
+  async updateStatus(id: number, status: StatusItemPedido) {
+    if (!Object.values(StatusItemPedido).includes(status)) {
+      throw new AppException('Status inválido!', ExceptionType.INVALID_PARAMS);
+    }
+
+    await this.repository.updateStatusById(id, status);
   }
 }

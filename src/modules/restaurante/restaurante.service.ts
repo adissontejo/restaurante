@@ -10,6 +10,9 @@ import { RestauranteMapper } from './mappers/restaurante.mapper';
 import { RestauranteWithRelations } from './restaurante.entity';
 import { StorageService } from 'src/storage/storage.service';
 import { removeUndefinedAndAssign } from 'src/utils/object';
+import { FuncionarioService } from '../funcionario/funcionario.service';
+import { UsuarioService } from '../usuario/usuario.service';
+import { Cargo } from '../funcionario/funcionario.entity';
 
 @Injectable()
 export class RestauranteService {
@@ -18,10 +21,15 @@ export class RestauranteService {
     private readonly cepService: CepService,
     private readonly horariosRestauranteService: HorarioRestauranteService,
     private readonly storageService: StorageService,
+    private readonly funcionarioService: FuncionarioService,
+    private readonly usuarioService: UsuarioService,
   ) {}
 
   @Transaction()
-  async create(data: CreateRestauranteDTO): Promise<RestauranteWithRelations> {
+  async create(
+    data: CreateRestauranteDTO,
+    usuarioEmail: string,
+  ): Promise<RestauranteWithRelations> {
     await this.checkExistingDominio(data.dominio);
 
     const createData = RestauranteMapper.fromCreateDTOToEntity(data);
@@ -30,8 +38,16 @@ export class RestauranteService {
       createData.logo_url = await this.storageService.uploadFile(data.logo);
     }
 
+    const usuario = await this.usuarioService.getByEmail(usuarioEmail);
+
     const enderecoCep = await this.cepService.createIfNotExists(data.cep);
     const result = await this.repository.insert(createData);
+
+    await this.funcionarioService.create({
+      restauranteId: result.insertId,
+      usuarioId: usuario.id,
+      cargo: Cargo.DONO,
+    });
 
     const horarios =
       await this.horariosRestauranteService.setHorariosForRestaurante(

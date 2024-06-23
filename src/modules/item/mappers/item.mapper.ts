@@ -43,11 +43,11 @@ export abstract class ItemMapper {
 
   static fromEntityToResponseDTO(data: ItemWithRelations): ItemResponseDTO {
     return {
-      ...this.fromEntityToResponseWithoutInstanciaDTO(data),
+      ...ItemMapper.fromEntityToResponseWithoutInstanciaDTO(data),
       instanciaAtiva: InstanciaItemMapper.fromEntityToResponseDTO(
         data.instancia_ativa,
       ),
-      campos: data.campos.map(CampoFormularioMapper.fromEntityToResponseDTO),
+      campos: data.campos?.map(CampoFormularioMapper.fromEntityToResponseDTO),
     };
   }
 }

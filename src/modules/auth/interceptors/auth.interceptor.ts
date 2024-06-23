@@ -39,7 +39,7 @@ export class AuthInterceptor implements NestInterceptor {
         const ws = context.switchToWs();
         const client = ws.getClient<Socket>();
 
-        const token = client.request.headers['authorization'];
+        const token = client.handshake.auth.token;
 
         const payload = await this.authService.verifyToken(token, optional);
 

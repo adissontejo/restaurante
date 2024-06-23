@@ -9,11 +9,12 @@ export interface Pedido {
   restaurante_id: number;
   usuario_id?: number;
   funcionario_responsavel_id: number;
-  data_hora: string;
+  data_hora: Date;
   numero_mesa: number;
   observacao?: string;
   nota_avaliacao?: number;
   observacao_avaliacao?: string;
+  iniciado: boolean;
 }
 
 export interface PedidoWithRelations extends Pedido {

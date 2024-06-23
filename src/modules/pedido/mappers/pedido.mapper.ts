@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import { CreatePedidoDTO } from '../dtos/create-pedido.dto';
 import { PedidoResponseDTO } from '../dtos/pedido-response.dto';
 import { Pedido, PedidoWithRelations } from '../pedido.entity';
@@ -12,9 +11,10 @@ export abstract class PedidoMapper {
       restaurante_id: dto.restauranteId,
       usuario_id: dto.usuarioId,
       funcionario_responsavel_id: dto.funcionarioResponsavelId,
-      data_hora: format(new Date(), 'yyyy-MM-dd hh:mm:ss'),
+      data_hora: new Date(),
       numero_mesa: dto.numeroMesa,
       observacao: dto.observacao,
+      iniciado: false,
     };
   }
 
@@ -27,6 +27,7 @@ export abstract class PedidoMapper {
       numeroMesa: entity.numero_mesa,
       observacao: entity.observacao || null,
       itens: entity.itens.map(ItemPedidoMapper.fromEntityToResponseDTO),
+      iniciado: entity.iniciado,
     };
   }
 }

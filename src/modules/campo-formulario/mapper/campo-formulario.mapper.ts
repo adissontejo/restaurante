@@ -39,7 +39,7 @@ export abstract class CampoFormularioMapper {
     data: Omit<CampoFormularioWithRelations, 'item'>,
   ): CampoFormularioResponseDTO {
     return {
-      ...this.fromEntityToResponseWithoutOpcoesDTO(data),
+      ...CampoFormularioMapper.fromEntityToResponseWithoutOpcoesDTO(data),
       opcoes: data.opcoes.map(OpcaoMapper.fromEntityToResponseDTO),
     };
   }

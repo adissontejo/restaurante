@@ -29,7 +29,10 @@ export class AuthService {
         dataNascimento: '1990-02-02',
       });
 
-      return { accessToken: tokens.access_token };
+      return {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+      };
     } catch (err) {
       throw new AppException('Invalid code', ExceptionType.UNAUTHORIZED);
     }
@@ -51,5 +54,20 @@ export class AuthService {
     } catch (err) {
       throw new AppException('Invalid credentials', ExceptionType.UNAUTHORIZED);
     }
+  }
+
+  async refresh(refreshToken?: string) {
+    if (!refreshToken) {
+      throw new AppException(
+        'Missing refreshToken',
+        ExceptionType.INVALID_PARAMS,
+      );
+    }
+
+    this.authClient.setCredentials({ refresh_token: refreshToken });
+
+    const { credentials } = await this.authClient.refreshAccessToken();
+
+    return { accessToken: credentials.access_token };
   }
 }

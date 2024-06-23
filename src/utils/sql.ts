@@ -4,9 +4,9 @@ export const inject = (value: any) => {
   if (value === null || value === undefined) {
     return 'NULL';
   } else if (Array.isArray(value)) {
-    return value.map((item) => inject(item)).join(', ');
+    return value.length ? value.map((item) => inject(item)).join(', ') : 'NULL';
   } else if (value instanceof Date) {
-    return `'${format(value, 'yyyy-MM-dd hh:mm:ss')}'`;
+    return `'${format(value, 'yyyy-MM-dd HH:mm:ss')}'`;
   } else if (typeof value === 'string') {
     return `'${value.replace(/'/g, "''")}'`;
   } else if (typeof value === 'number' || typeof value === 'boolean') {

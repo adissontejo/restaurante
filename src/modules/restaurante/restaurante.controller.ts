@@ -19,6 +19,8 @@ import { RestauranteMapper } from './mappers/restaurante.mapper';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageFilePipe } from 'src/components/image-file.pipe';
 import { UseAuthentication } from '../auth/decorators/use-authentication.decorator';
+import { GoogleUser } from '../auth/decorators/google-user.decorator';
+import { UserProfileDTO } from 'src/services/google';
 
 @Controller('/restaurantes')
 export class RestauranteController {
@@ -29,12 +31,16 @@ export class RestauranteController {
   @UseInterceptors(FileInterceptor('logo'))
   async create(
     @Body(CreateRestauranteValidator) data: Omit<CreateRestauranteDTO, 'logo'>,
+    @GoogleUser() user: UserProfileDTO,
     @UploadedFile(ImageFilePipe) logo?: Express.Multer.File,
   ) {
-    const restaurante = await this.service.create({
-      ...data,
-      logo,
-    });
+    const restaurante = await this.service.create(
+      {
+        ...data,
+        logo,
+      },
+      user.email,
+    );
 
     return RestauranteMapper.fromEntityToResponseDTO(restaurante);
   }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { FuncionarioRepository } from './funcionario.repository';
 import { CreateFuncionarioDTO } from './dtos/create-funcionario.dto';
 import { FuncionarioMapper } from './mappers/funcionario.mapper';
@@ -15,6 +15,7 @@ export class FuncionarioService {
   constructor(
     private readonly repository: FuncionarioRepository,
     private readonly usuarioService: UsuarioService,
+    @Inject(forwardRef(() => RestauranteService))
     private readonly restauranteService: RestauranteService,
   ) {}
 
@@ -45,8 +46,11 @@ export class FuncionarioService {
     };
   }
 
-  async list() {
-    const funcionarios = await this.repository.findAll();
+  async list(restauranteId: number, usuarioId?: number) {
+    const funcionarios = await this.repository.findByRestaurante(
+      restauranteId,
+      usuarioId,
+    );
 
     return funcionarios;
   }
