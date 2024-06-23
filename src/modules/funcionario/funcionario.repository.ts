@@ -100,4 +100,35 @@ export class FuncionarioRepository {
 
     return restaurante;
   }
+
+  async getLessResponsible(
+    restauranteId: number,
+  ): Promise<FuncionarioWithRelations | null> {
+    const [data] = await this.db.query<{ f: Funcionario; u: Usuario }[]>(`
+      SELECT f.*, u.*
+      FROM funcionario f
+      JOIN usuario u
+      ON f.usuario_id = u.id
+      LEFT JOIN pedido p
+      ON f.id = p.funcionario_responsavel_id
+      AND p.restaurante_id = ${inject(restauranteId)}
+      LEFT JOIN item_pedido ip
+      ON p.id = ip.pedido_id
+      AND ip.status = 'preparando'
+      WHERE f.cargo = 'garcom'
+      AND f.restaurante_id = ${inject(restauranteId)}
+      GROUP BY f.id, u.id
+      ORDER BY COUNT(DISTINCT p.id)
+      LIMIT 1
+    `);
+
+    if (!data) {
+      return null;
+    }
+
+    return {
+      ...data.f,
+      usuario: data.u,
+    };
+  }
 }

@@ -123,4 +123,8 @@ export class FuncionarioService {
 
     return funcionario;
   }
+
+  async getLessResponsible(restauranteId: number) {
+    return this.repository.getLessResponsible(restauranteId);
+  }
 }

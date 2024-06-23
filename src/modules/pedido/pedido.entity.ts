@@ -1,4 +1,5 @@
 import { CampoFormularioWithRelations } from '../campo-formulario/campo-formulario.entity';
+import { FuncionarioWithRelations } from '../funcionario/funcionario.entity';
 import { InstanciaItemWithRelations } from '../instancia-item/instancia-item.entity';
 import { ItemPedidoWithRelations } from '../item-pedido/item-pedido.entity';
 import { ItemWithRelations } from '../item/item.entity';
@@ -8,7 +9,7 @@ export interface Pedido {
   id: number;
   restaurante_id: number;
   usuario_id?: number;
-  funcionario_responsavel_id: number;
+  funcionario_responsavel_id?: number;
   data_hora: Date;
   numero_mesa: number;
   observacao?: string;
@@ -29,4 +30,5 @@ export interface PedidoWithRelations extends Pedido {
       campo_formulario: Omit<CampoFormularioWithRelations, 'opcoes' | 'item'>;
     })[];
   })[];
+  funcionario_responsavel?: FuncionarioWithRelations;
 }

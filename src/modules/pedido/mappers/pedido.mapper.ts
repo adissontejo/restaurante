@@ -1,12 +1,11 @@
+import { FuncionarioMapper } from 'src/modules/funcionario/mappers/funcionario.mapper';
 import { CreatePedidoDTO } from '../dtos/create-pedido.dto';
 import { PedidoResponseDTO } from '../dtos/pedido-response.dto';
 import { Pedido, PedidoWithRelations } from '../pedido.entity';
 import { ItemPedidoMapper } from 'src/modules/item-pedido/mappers/item-pedido.mapper';
 
 export abstract class PedidoMapper {
-  static fromCreateDTOToEntity(
-    dto: CreatePedidoDTO & { funcionarioResponsavelId: number },
-  ): Omit<Pedido, 'id'> {
+  static fromCreateDTOToEntity(dto: CreatePedidoDTO): Omit<Pedido, 'id'> {
     return {
       restaurante_id: dto.restauranteId,
       usuario_id: dto.usuarioId,
@@ -28,6 +27,11 @@ export abstract class PedidoMapper {
       observacao: entity.observacao || null,
       itens: entity.itens.map(ItemPedidoMapper.fromEntityToResponseDTO),
       iniciado: entity.iniciado,
+      funcionarioResponsavel: entity.funcionario_responsavel
+        ? FuncionarioMapper.fromEntityToResponseDTO(
+            entity.funcionario_responsavel,
+          )
+        : null,
     };
   }
 }

@@ -14,6 +14,8 @@ import { Item } from '../item/item.entity';
 import { CampoFormulario } from '../campo-formulario/campo-formulario.entity';
 import { Opcao } from '../opcao/opcao.entity';
 import { groupArray } from 'src/utils/array';
+import { Funcionario } from '../funcionario/funcionario.entity';
+import { Usuario } from '../usuario/usuario.entity';
 
 @Injectable()
 export class PedidoRepository {
@@ -57,6 +59,8 @@ export class PedidoRepository {
         cf: CampoFormulario;
         os: OpcaoSelecionada;
         o: Opcao;
+        fr: Funcionario;
+        fru: Usuario;
       }[]
     >(`
       SELECT *
@@ -75,6 +79,10 @@ export class PedidoRepository {
       ON rcp.id = os.resposta_campo_formulario_id
       LEFT JOIN opcao o
       ON os.opcao_id = o.id
+      LEFT JOIN funcionario fr
+      ON p.funcionario_responsavel_id = fr.id
+      LEFT JOIN usuario fru
+      ON fr.usuario_id = fru.id
       ${sql}
     `);
 
@@ -85,6 +93,10 @@ export class PedidoRepository {
       format(group): PedidoWithRelations {
         return {
           ...group[0].p,
+          funcionario_responsavel: {
+            ...group[0].fr,
+            usuario: group[0].fru,
+          },
           itens: groupArray(group, {
             by(item) {
               return item.ip.id;
@@ -121,7 +133,7 @@ export class PedidoRepository {
 
   async getByRestauranteId(restauranteId: number) {
     const result = await this.baseSelect(`
-      WHERE restaurante_id = ${inject(restauranteId)}
+      WHERE p.restaurante_id = ${inject(restauranteId)}
       ORDER BY data_hora DESC
     `);
 
@@ -162,6 +174,16 @@ export class PedidoRepository {
     const result = await this.db.query(`
       UPDATE pedido
       SET iniciado = TRUE
+      WHERE id = ${inject(id)}
+    `);
+
+    return result;
+  }
+
+  async setFuncionarioById(id: number, funcionarioResponsavelId: number) {
+    const result = await this.db.query(`
+      UPDATE pedido
+      SET funcionario_responsavel_id = ${inject(funcionarioResponsavelId)}
       WHERE id = ${inject(id)}
     `);
 

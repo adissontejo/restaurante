@@ -5,7 +5,6 @@ export class CreatePedidoValidator extends BaseValidator {
   get schema(): ZodSchema {
     return z.object({
       restauranteId: z.coerce.number().positive(),
-      funcionarioId: z.coerce.number().positive().nullish(),
       numeroMesa: z.coerce.number().positive(),
       observacao: z.string().max(400).nullish(),
       itens: z

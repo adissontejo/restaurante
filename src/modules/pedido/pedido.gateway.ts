@@ -277,4 +277,30 @@ export class PedidoGateway implements OnGatewayConnection {
     );
     client.emit('cancel-item_response');
   }
+
+  @SubscribeMessage('set-funcionario-responsavel')
+  async setFuncionarioResponsavel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() [pedidoId, funcionarioResponsavelId]: number[],
+  ) {
+    const connectionType = this.getConnectionType(client);
+
+    if (connectionType !== ConnectionType.FUNCIONARIO) {
+      throw new AppException('Sem autorização', ExceptionType.UNAUTHORIZED);
+    }
+
+    const funcionario = await this.service.setFuncionarioResponsavel(
+      pedidoId,
+      funcionarioResponsavelId,
+    );
+
+    this.broadcastToRoom(
+      client,
+      ConnectionType.FUNCIONARIO,
+      'funcionario-responsavel-changed',
+      pedidoId,
+      funcionario,
+    );
+    client.emit('set-funcionario-responsavel_response', funcionario);
+  }
 }

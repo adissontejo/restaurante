@@ -27,7 +27,6 @@ export class PedidoService {
     data: Omit<CreatePedidoDTO, 'usuarioId'>,
   ): Promise<PedidoWithRelations> {
     await this.restauranteService.getById(data.restauranteId);
-    await this.funcionarioService.getById(1);
 
     let usuario: Usuario | undefined = undefined;
 
@@ -35,9 +34,12 @@ export class PedidoService {
       usuario = await this.usuarioService.getByEmail(usuarioEmail);
     }
 
+    const funcionarioResponsavel =
+      await this.funcionarioService.getLessResponsible(data.restauranteId);
+
     const entity = PedidoMapper.fromCreateDTOToEntity({
       ...data,
-      funcionarioResponsavelId: 1,
+      funcionarioResponsavelId: funcionarioResponsavel?.id,
       usuarioId: usuario?.id,
     });
 
@@ -55,6 +57,7 @@ export class PedidoService {
       ...entity,
       id: result.insertId,
       itens: itensPedido,
+      funcionario_responsavel: funcionarioResponsavel || undefined,
     };
   }
 
@@ -121,5 +124,19 @@ export class PedidoService {
       ...pedido,
       iniciado: true,
     };
+  }
+
+  @Transaction()
+  async setFuncionarioResponsavel(
+    id: number,
+    funcionarioResponsavelId: number,
+  ) {
+    const funcionarioResponsavel = await this.funcionarioService.getById(
+      funcionarioResponsavelId,
+    );
+
+    await this.repository.setFuncionarioById(id, funcionarioResponsavelId);
+
+    return funcionarioResponsavel;
   }
 }
