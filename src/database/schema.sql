@@ -77,9 +77,7 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`usuario` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
-  `data_nascimento` DATE NOT NULL,
   `foto_perfil_url` VARCHAR(200) NULL,
-  `celular` VARCHAR(20) NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE)
 ENGINE = InnoDB;
@@ -110,23 +108,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `restaurante`.`categoria`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante`.`categoria` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `nome` VARCHAR(100) NOT NULL,
-  `restaurante_id` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_categoria_restaurante1_idx` (`restaurante_id` ASC) VISIBLE,
-  CONSTRAINT `fk_categoria_restaurante1`
-    FOREIGN KEY (`restaurante_id`)
-    REFERENCES `restaurante`.`restaurante` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `restaurante`.`item`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`item` (
@@ -134,12 +115,13 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`item` (
   `nome` VARCHAR(100) NOT NULL,
   `habilitado` TINYINT NOT NULL,
   `foto_url` VARCHAR(200) NULL,
-  `categoria_id` INT NOT NULL,
+  `categoria` VARCHAR(100) NOT NULL,
+  `restaurante_id` INT NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `fk_item_categoria1_idx` (`categoria_id` ASC) VISIBLE,
-  CONSTRAINT `fk_item_categoria1`
-    FOREIGN KEY (`categoria_id`)
-    REFERENCES `restaurante`.`categoria` (`id`)
+  INDEX `fk_item_restaurante1_idx` (`restaurante_id` ASC) VISIBLE,
+  CONSTRAINT `fk_item_restaurante1`
+    FOREIGN KEY (`restaurante_id`)
+    REFERENCES `restaurante`.`restaurante` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -241,7 +223,7 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`pedido` (
   `funcionario_responsavel_id` INT NULL,
   `restaurante_id` INT NOT NULL,
   `iniciado` TINYINT NOT NULL,
-  `cupom_id` INT NOT NULL,
+  `cupom_id` INT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_pedido_usuario1_idx` (`usuario_id` ASC) VISIBLE,
   INDEX `fk_pedido_restaurante1_idx` (`restaurante_id` ASC) VISIBLE,
@@ -260,8 +242,8 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`pedido` (
   CONSTRAINT `fk_pedido_funcionario1`
     FOREIGN KEY (`funcionario_responsavel_id`)
     REFERENCES `restaurante`.`funcionario` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE SET NULL
+    ON UPDATE SET NULL,
   CONSTRAINT `fk_pedido_cupom1`
     FOREIGN KEY (`cupom_id`)
     REFERENCES `restaurante`.`cupom` (`id`)
