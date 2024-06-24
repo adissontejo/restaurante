@@ -54,6 +54,13 @@ export class UsuarioController {
     return UsuarioMapper.fromEntityToResponseDTO(usuario);
   }
 
+  @Get('/by-email/:email')
+  async getByEmail(@Param('email') email: string) {
+    const usuario = await this.service.getByEmail(email);
+
+    return UsuarioMapper.fromEntityToResponseDTO(usuario);
+  }
+
   @Get('/:id')
   async get(@Param('id', ParseIntPipe) id: number) {
     const usuario = await this.service.getById(id);
