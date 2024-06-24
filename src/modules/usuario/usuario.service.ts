@@ -19,13 +19,6 @@ export class UsuarioService {
   private async unsafeCreate(data: CreateUsuarioDTO) {
     const createData = UsuarioMapper.fromCreateDTOToEntity(data);
 
-    if (!data.nome || !data.email || !data.dataNascimento) {
-      throw new AppException(
-        `Todos os campos obrigatórios devem ser fornecidos`,
-        ExceptionType.INVALID_PARAMS,
-      );
-    }
-
     if (data.fotoPerfil) {
       createData.foto_perfil_url = await this.storageService.uploadFile(
         data.fotoPerfil,

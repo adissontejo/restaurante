@@ -4,7 +4,8 @@ export interface CreateItemDTO {
   nome: string;
   preco: number;
   habilitado?: boolean;
-  categoriaId: number;
+  categoria: string;
   campos?: CreateCampoFormularioDTO[];
   foto?: Express.Multer.File;
+  restauranteId: number;
 }

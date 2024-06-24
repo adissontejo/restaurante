@@ -15,6 +15,7 @@ export class UpdateItemValidator extends BaseValidator {
             : value,
         z.boolean().optional(),
       ),
+      categoria: z.string().min(1).max(100).optional(),
       preco: z.coerce.number().positive().optional(),
       campos: z.preprocess(
         (campos) =>

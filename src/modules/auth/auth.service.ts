@@ -25,8 +25,6 @@ export class AuthService {
         nome: profile.name,
         email: profile.email,
         fotoPerfilUrl: profile.picture,
-        celular: '',
-        dataNascimento: '1990-02-02',
       });
 
       return {

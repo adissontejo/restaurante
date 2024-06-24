@@ -6,7 +6,6 @@ import {
   InstanciaItemWithRelations,
 } from './instancia-item.entity';
 import { Item } from '../item/item.entity';
-import { Categoria } from '../categoria/categoria.entity';
 import { groupArray } from 'src/utils/array';
 import {
   CampoFormulario,
@@ -41,7 +40,6 @@ export class InstanciaItemRepository {
       {
         ii: InstanciaItem;
         i: Item;
-        c: Categoria;
         cf: CampoFormulario;
         o: Opcao;
       }[]
@@ -50,8 +48,6 @@ export class InstanciaItemRepository {
       FROM instancia_item ii
       JOIN item i
       ON ii.item_id = i.id
-      JOIN categoria c
-      ON i.categoria_id = c.id
       LEFT JOIN campo_formulario cf
       ON i.id = cf.item_id
       AND cf.deletado = FALSE
@@ -69,7 +65,6 @@ export class InstanciaItemRepository {
           ...group[0].ii,
           item: {
             ...group[0].i,
-            categoria: group[0].c,
             campos: group[0].cf.id
               ? groupArray(group, {
                   by(item) {

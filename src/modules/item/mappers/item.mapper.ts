@@ -15,8 +15,9 @@ export abstract class ItemMapper {
     return {
       nome: data.nome,
       habilitado: data.habilitado === undefined ? true : data.habilitado,
-      categoria_id: data.categoriaId,
+      categoria: data.categoria,
       foto_url: data.fotoUrl,
+      restaurante_id: data.restauranteId,
     };
   }
 
@@ -26,6 +27,7 @@ export abstract class ItemMapper {
     return {
       nome: data.nome,
       habilitado: data.habilitado,
+      categoria: data.categoria,
       foto_url: data.fotoUrl,
     };
   }
@@ -38,6 +40,7 @@ export abstract class ItemMapper {
       nome: data.nome,
       habilitado: data.habilitado,
       fotoUrl: data.foto_url || null,
+      categoria: data.categoria,
     };
   }
 

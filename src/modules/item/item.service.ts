@@ -8,26 +8,26 @@ import { AppException, ExceptionType } from 'src/core/exception.core';
 import { Transaction } from 'src/decorators/transaction.decorator';
 import { removeUndefinedAndAssign } from 'src/utils/object';
 import { InstanciaItemService } from '../instancia-item/instancia-item.service';
-import { CategoriaService } from '../categoria/categoria.service';
 import { CampoFormularioService } from '../campo-formulario/campo-formulario.service';
 import { CampoFormularioWithRelations } from '../campo-formulario/campo-formulario.entity';
 import { StorageService } from 'src/storage/storage.service';
+import { RestauranteService } from '../restaurante/restaurante.service';
 
 @Injectable()
 export class ItemService {
   constructor(
     private readonly repository: ItemRepository,
     private readonly instanciaItemService: InstanciaItemService,
-    private readonly categoriaService: CategoriaService,
     private readonly campoFormularioService: CampoFormularioService,
     private readonly storageService: StorageService,
+    private readonly restauranteService: RestauranteService,
   ) {}
 
   @Transaction()
   async create(data: CreateItemDTO): Promise<ItemWithRelations> {
-    const categoria = await this.categoriaService.getById(data.categoriaId);
-
     const createData = ItemMapper.fromCreateDTOToEntity(data);
+
+    await this.restauranteService.getById(data.restauranteId);
 
     if (data.foto) {
       createData.foto_url = await this.storageService.uploadFile(data.foto);
@@ -53,7 +53,6 @@ export class ItemService {
       ...createData,
       id: result.insertId,
       instancia_ativa: instanciaItem,
-      categoria,
       campos,
     };
   }

@@ -13,7 +13,6 @@ import {
 } from '../campo-formulario/campo-formulario.entity';
 import { Opcao } from '../opcao/opcao.entity';
 import { groupArray } from 'src/utils/array';
-import { Categoria } from '../categoria/categoria.entity';
 
 @Injectable()
 export class ItemRepository {
@@ -52,7 +51,6 @@ export class ItemRepository {
     const base = await this.db.query<
       {
         i: Item;
-        c: Categoria;
         ii: InstanciaItem;
         cf: CampoFormulario;
         o: Opcao;
@@ -60,8 +58,6 @@ export class ItemRepository {
     >(`
       SELECT *
       FROM item i
-      JOIN categoria c
-      ON i.categoria_id = c.id
       LEFT JOIN instancia_item ii
       ON i.id = ii.item_id AND ii.ativa = TRUE
       LEFT JOIN campo_formulario cf
@@ -80,7 +76,6 @@ export class ItemRepository {
         return {
           ...group[0].i,
           instancia_ativa: group[0].ii,
-          categoria: group[0].c,
           campos: group[0].cf.id
             ? groupArray(group, {
                 by(item) {
@@ -100,9 +95,10 @@ export class ItemRepository {
   }
 
   async findByRestauranteId(restauranteId: number) {
-    const itens = await this.baseSelect(
-      `WHERE i.restaurante_id = ${inject(restauranteId)}`,
-    );
+    const itens = await this.baseSelect(`
+      WHERE i.restaurante_id = ${inject(restauranteId)}
+      ORDER BY i.id
+    `);
 
     return itens;
   }

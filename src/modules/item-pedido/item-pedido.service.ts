@@ -35,7 +35,7 @@ export class ItemPedidoService {
     const instanciaItems = await Promise.all(instanciaItemsPromise);
 
     instanciaItems.forEach((item) => {
-      if (item.item.categoria.restaurante_id !== pedido.restaurante_id) {
+      if (item.item.restaurante_id !== pedido.restaurante_id) {
         throw new AppException(
           `Item de id ${item.item.id} inválido para o restauranteId ${pedido.restaurante_id}`,
           ExceptionType.INVALID_PARAMS,

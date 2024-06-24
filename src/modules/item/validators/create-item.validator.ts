@@ -7,6 +7,7 @@ export class CreateItemValidator extends BaseValidator {
 
   get schema(): ZodSchema {
     return z.object({
+      restauranteId: z.coerce.number().int().positive(),
       nome: z.string().min(1).max(100),
       habilitado: z.preprocess(
         (value) =>
@@ -15,7 +16,7 @@ export class CreateItemValidator extends BaseValidator {
             : value,
         z.boolean().optional(),
       ),
-      categoriaId: z.coerce.number().int().positive(),
+      categoria: z.string().min(1).max(100),
       preco: z.coerce.number().positive(),
       campos: z.preprocess(
         (campos) =>

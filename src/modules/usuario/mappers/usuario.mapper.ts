@@ -8,8 +8,6 @@ export abstract class UsuarioMapper {
     return {
       nome: data.nome,
       email: data.email,
-      data_nascimento: data.dataNascimento,
-      celular: data.celular,
       foto_perfil_url: data.fotoPerfilUrl,
     };
   }
@@ -19,9 +17,6 @@ export abstract class UsuarioMapper {
   ): Omit<Partial<Usuario>, 'id'> {
     return {
       nome: data.nome,
-      email: data.email,
-      data_nascimento: data.dataNascimento,
-      celular: data.celular,
       foto_perfil_url: data.fotoPerfilUrl,
     };
   }
@@ -31,8 +26,6 @@ export abstract class UsuarioMapper {
       id: data.id,
       nome: data.nome,
       email: data.email,
-      dataNascimento: data.data_nascimento,
-      celular: data.celular || null,
       fotoPerfilUrl: data.foto_perfil_url || null,
     };
   }

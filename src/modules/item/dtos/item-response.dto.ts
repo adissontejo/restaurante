@@ -7,6 +7,7 @@ export interface ItemResponseDTO {
   habilitado: boolean;
   campos: CampoFormularioResponseDTO[];
   instanciaAtiva: InstanciaItemResponseDTO;
+  categoria: string;
   fotoUrl: string | null;
 }
 
