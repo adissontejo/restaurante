@@ -99,17 +99,17 @@ export class ItemService {
     let instanciaItem = item.instancia_ativa;
     let campos = item.campos;
 
-    if (data.preco) {
+    if (data.preco && data.preco !== item.instancia_ativa.preco) {
       instanciaItem = await this.instanciaItemService.createForItem(
         item,
         data.preco,
       );
     }
 
-    if (data.campos) {
+    if (data.campos !== undefined) {
       campos = await this.campoFormularioService.setCamposFormularioForItem(
         item,
-        data.campos,
+        data.campos || [],
       );
     }
 

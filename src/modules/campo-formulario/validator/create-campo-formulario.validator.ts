@@ -7,9 +7,21 @@ export class CreateCampoFormularioValidator extends BaseValidator {
     return z.object({
       nome: z.string().min(3).max(100),
       tipoCampo: z.nativeEnum(TipoCampo),
-      qtMinOpcoes: z.coerce.number().int().positive().nullish(),
-      qtMaxOpcoes: z.coerce.number().int().positive().nullish(),
+      qtMinOpcoes: z.preprocess(
+        (value) =>
+          typeof value === 'string' && value.length === 0 ? null : value,
+        z.coerce.number().int().positive().nullish(),
+      ),
+      qtMaxOpcoes: z.preprocess(
+        (value) =>
+          typeof value === 'string' && value.length === 0 ? null : value,
+        z.coerce.number().int().positive().nullish(),
+      ),
       opcoes: z.array(z.string().min(3).max(100)).nullish(),
+      obrigatorio: z.preprocess(
+        (value) => (typeof value === 'string' ? value === 'true' : value),
+        z.coerce.boolean(),
+      ),
     });
   }
 }

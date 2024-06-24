@@ -7,4 +7,5 @@ export interface CreatePedidoDTO {
   numeroMesa: number;
   observacao?: string;
   itens: Omit<CreateItemPedidoDTO, 'pedidoId'>[];
+  cupomId?: number;
 }

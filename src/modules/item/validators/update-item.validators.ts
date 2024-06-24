@@ -8,9 +8,19 @@ export class UpdateItemValidator extends BaseValidator {
   get schema(): ZodSchema {
     return z.object({
       nome: z.string().min(1).max(100).optional(),
-      habilitado: z.coerce.boolean().optional(),
+      habilitado: z.preprocess(
+        (value) =>
+          typeof value === 'string' && value.length !== 0
+            ? value === 'true'
+            : value,
+        z.boolean().optional(),
+      ),
       preco: z.coerce.number().positive().optional(),
-      campos: z.array(this.campoValidator.schema).optional(),
+      campos: z.preprocess(
+        (campos) =>
+          typeof campos === 'string' && campos.length === 0 ? null : campos,
+        z.array(this.campoValidator.schema).nullish(),
+      ),
     });
   }
 }

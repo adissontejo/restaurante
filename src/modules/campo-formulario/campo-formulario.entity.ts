@@ -4,6 +4,7 @@ import { Opcao } from '../opcao/opcao.entity';
 export enum TipoCampo {
   INPUT = 'input',
   SELECT = 'select',
+  MULTISELECT = 'multiselect',
 }
 
 export interface CampoFormulario {
@@ -14,6 +15,7 @@ export interface CampoFormulario {
   qt_max_opcoes?: number;
   item_id: number;
   deletado: boolean;
+  obrigatorio: boolean;
 }
 
 export interface CampoFormularioWithRelations extends CampoFormulario {

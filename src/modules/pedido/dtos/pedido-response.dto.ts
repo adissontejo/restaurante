@@ -1,3 +1,4 @@
+import { CupomResponseDTO } from 'src/modules/cupom/dtos/cupom-response.dto';
 import { FuncionarioResponseDTO } from 'src/modules/funcionario/dtos/funcionario-response.dto';
 import { ItemPedidoResponseDTO } from 'src/modules/item-pedido/dtos/item-pedido-response.dto';
 
@@ -9,4 +10,5 @@ export interface PedidoResponseDTO {
   itens: ItemPedidoResponseDTO[];
   iniciado: boolean;
   funcionarioResponsavel: FuncionarioResponseDTO | null;
+  cupom: CupomResponseDTO | null;
 }

@@ -8,6 +8,7 @@ export interface CampoFormularioResponseDTO {
   qtMinOpcoes?: number;
   qtMaxOpcoes?: number;
   opcoes?: OpcaoResponseDTO[];
+  obrigatorio: boolean;
 }
 
 export interface CampoFormularioResponseWithoutOpcoesDTO

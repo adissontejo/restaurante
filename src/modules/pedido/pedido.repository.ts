@@ -16,6 +16,7 @@ import { Opcao } from '../opcao/opcao.entity';
 import { groupArray } from 'src/utils/array';
 import { Funcionario } from '../funcionario/funcionario.entity';
 import { Usuario } from '../usuario/usuario.entity';
+import { Cupom } from '../cupom/cupom.entity';
 
 @Injectable()
 export class PedidoRepository {
@@ -61,6 +62,7 @@ export class PedidoRepository {
         o: Opcao;
         fr: Funcionario;
         fru: Usuario;
+        c: Cupom;
       }[]
     >(`
       SELECT *
@@ -83,6 +85,8 @@ export class PedidoRepository {
       ON p.funcionario_responsavel_id = fr.id
       LEFT JOIN usuario fru
       ON fr.usuario_id = fru.id
+      LEFT JOIN cupom c
+      ON p.cupom_id = c.id
       ${sql}
     `);
 
@@ -97,6 +101,7 @@ export class PedidoRepository {
             ...group[0].fr,
             usuario: group[0].fru,
           },
+          cupom: group[0].c,
           itens: groupArray(group, {
             by(item) {
               return item.ip.id;

@@ -6,6 +6,7 @@ import { RestauranteModule } from '../restaurante/restaurante.module';
 import { UsuarioModule } from '../usuario/usuario.module';
 import { FuncionarioModule } from '../funcionario/funcionario.module';
 import { ItemPedidoModule } from '../item-pedido/item-pedido.module';
+import { CupomModule } from '../cupom/cupom.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ItemPedidoModule } from '../item-pedido/item-pedido.module';
     UsuarioModule,
     FuncionarioModule,
     ItemPedidoModule,
+    CupomModule,
   ],
   providers: [PedidoRepository, PedidoService, PedidoGateway],
   exports: [PedidoService],

@@ -9,6 +9,8 @@ import { Categoria, CategoriaWithRelations } from './categoria.entity';
 import { groupArray } from 'src/utils/array';
 import { Item } from '../item/item.entity';
 import { InstanciaItem } from '../instancia-item/instancia-item.entity';
+import { CampoFormulario } from '../campo-formulario/campo-formulario.entity';
+import { Opcao } from '../opcao/opcao.entity';
 
 @Injectable()
 export class CategoriaRepository {
@@ -45,7 +47,13 @@ export class CategoriaRepository {
 
   private async baseSelect(sql: string = '') {
     const base = await this.db.query<
-      { c: Categoria; i: Item; ii: InstanciaItem }[]
+      {
+        c: Categoria;
+        i: Item;
+        ii: InstanciaItem;
+        cf: CampoFormulario;
+        o: Opcao;
+      }[]
     >(`
       SELECT *
       FROM categoria c
@@ -53,6 +61,11 @@ export class CategoriaRepository {
       ON c.id = i.categoria_id
       LEFT JOIN instancia_item ii
       ON i.id = ii.item_id AND ii.ativa = TRUE
+      LEFT JOIN campo_formulario cf
+      ON i.id = cf.item_id
+      AND cf.deletado = FALSE
+      LEFT JOIN opcao o
+      ON cf.id = o.campo_formulario_id
       ${sql}
     `);
 
@@ -64,10 +77,32 @@ export class CategoriaRepository {
         return {
           ...group[0].c,
           itens: group[0].i.id
-            ? group.map((item) => ({
-                ...item.i,
-                instancia_ativa: item.ii,
-              }))
+            ? groupArray(group, {
+                by(item) {
+                  return item.i.id;
+                },
+                format(group) {
+                  return {
+                    ...group[0].i,
+                    instancia_ativa: group[0].ii,
+                    campos: group[0].cf.id
+                      ? groupArray(group, {
+                          by(item) {
+                            return item.cf.id;
+                          },
+                          format(group) {
+                            return {
+                              ...group[0].cf,
+                              opcoes: group[0].o.id
+                                ? group.map((item) => item.o)
+                                : [],
+                            };
+                          },
+                        })
+                      : [],
+                  };
+                },
+              })
             : [],
         };
       },

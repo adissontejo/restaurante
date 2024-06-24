@@ -20,6 +20,7 @@ export abstract class CampoFormularioMapper {
       qt_max_opcoes: data.qtMaxOpcoes,
       item_id: data.itemId,
       deletado: false,
+      obrigatorio: data.obrigatorio,
     };
   }
 
@@ -32,6 +33,7 @@ export abstract class CampoFormularioMapper {
       tipoCampo: data.tipo_campo,
       qtMinOpcoes: data.qt_min_opcoes,
       qtMaxOpcoes: data.qt_max_opcoes,
+      obrigatorio: data.obrigatorio,
     };
   }
 

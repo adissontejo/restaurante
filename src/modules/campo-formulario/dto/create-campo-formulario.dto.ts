@@ -5,5 +5,6 @@ export interface CreateCampoFormularioDTO {
   tipoCampo: TipoCampo;
   qtMinOpcoes?: number;
   qtMaxOpcoes?: number;
-  opcoes: string[];
+  opcoes?: string[];
+  obrigatorio: boolean;
 }

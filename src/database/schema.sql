@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`restaurante` (
   `logo_url` VARCHAR(200) NULL,
   `qt_pedidos_fidelidade` INT NULL,
   `valor_fidelidade` FLOAT NULL,
+  `descricao` VARCHAR(4000) NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_restaurante_1_idx` (`cep` ASC) VISIBLE,
   UNIQUE INDEX `dominio_UNIQUE` (`dominio` ASC) VISIBLE,
@@ -201,6 +202,32 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `restaurante`.`cupom`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `restaurante`.`cupom` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `desconto` FLOAT NOT NULL,
+  `usuario_id` INT NOT NULL,
+  `restaurante_id` INT NOT NULL,
+  `qt_pedidos_feitos` INT NOT NULL,
+  `qt_pedidos_total` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_cupom_usuario1_idx` (`usuario_id` ASC) VISIBLE,
+  INDEX `fk_cupom_restaurante1_idx` (`restaurante_id` ASC) VISIBLE,
+  CONSTRAINT `fk_cupom_usuario1`
+    FOREIGN KEY (`usuario_id`)
+    REFERENCES `restaurante`.`usuario` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_cupom_restaurante1`
+    FOREIGN KEY (`restaurante_id`)
+    REFERENCES `restaurante`.`restaurante` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `restaurante`.`pedido`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `restaurante`.`pedido` (
@@ -210,13 +237,16 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`pedido` (
   `observacao` VARCHAR(400) NULL,
   `nota_avaliacao` INT NULL,
   `observacao_avaliacao` VARCHAR(400) NULL,
-  `usuario_id` INT NOT NULL,
+  `usuario_id` INT NULL,
   `funcionario_responsavel_id` INT NULL,
   `restaurante_id` INT NOT NULL,
+  `iniciado` TINYINT NOT NULL,
+  `cupom_id` INT NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_pedido_usuario1_idx` (`usuario_id` ASC) VISIBLE,
   INDEX `fk_pedido_restaurante1_idx` (`restaurante_id` ASC) VISIBLE,
   INDEX `fk_pedido_funcionario1_idx` (`funcionario_responsavel_id` ASC) VISIBLE,
+  INDEX `fk_pedido_cupom1_idx` (`cupom_id` ASC) VISIBLE,
   CONSTRAINT `fk_pedido_usuario1`
     FOREIGN KEY (`usuario_id`)
     REFERENCES `restaurante`.`usuario` (`id`)
@@ -231,6 +261,11 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`pedido` (
     FOREIGN KEY (`funcionario_responsavel_id`)
     REFERENCES `restaurante`.`funcionario` (`id`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_pedido_cupom1`
+    FOREIGN KEY (`cupom_id`)
+    REFERENCES `restaurante`.`cupom` (`id`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -244,6 +279,7 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`item_pedido` (
   `observacao` VARCHAR(400) NULL,
   `pedido_id` INT NOT NULL,
   `instancia_item_id` INT NOT NULL,
+  `status` ENUM('preparando', 'finalizado', 'cancelado') NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_prato_pedido_pedido1_idx` (`pedido_id` ASC) VISIBLE,
   INDEX `fk_prato_pedido_instancia_item1_idx` (`instancia_item_id` ASC) VISIBLE,
@@ -329,37 +365,6 @@ CREATE TABLE IF NOT EXISTS `restaurante`.`conta` (
   CONSTRAINT `fk_conta_usuario1`
     FOREIGN KEY (`usuario_id`)
     REFERENCES `restaurante`.`usuario` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `restaurante`.`cupom`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante`.`cupom` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `desconto` FLOAT NOT NULL,
-  `usuario_id` INT NOT NULL,
-  `pedido_id` INT NULL,
-  `restaurante_id` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_cupom_usuario1_idx` (`usuario_id` ASC) VISIBLE,
-  INDEX `fk_cupom_pedido1_idx` (`pedido_id` ASC) VISIBLE,
-  INDEX `fk_cupom_restaurante1_idx` (`restaurante_id` ASC) VISIBLE,
-  CONSTRAINT `fk_cupom_usuario1`
-    FOREIGN KEY (`usuario_id`)
-    REFERENCES `restaurante`.`usuario` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_cupom_pedido1`
-    FOREIGN KEY (`pedido_id`)
-    REFERENCES `restaurante`.`pedido` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_cupom_restaurante1`
-    FOREIGN KEY (`restaurante_id`)
-    REFERENCES `restaurante`.`restaurante` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

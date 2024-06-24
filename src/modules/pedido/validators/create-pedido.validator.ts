@@ -7,17 +7,20 @@ export class CreatePedidoValidator extends BaseValidator {
       restauranteId: z.coerce.number().positive(),
       numeroMesa: z.coerce.number().positive(),
       observacao: z.string().max(400).nullish(),
+      cupomId: z.coerce.number().int().positive().optional(),
       itens: z
         .array(
           z.object({
-            instanciaItemId: z.coerce.number().positive(),
-            quantidade: z.coerce.number().positive(),
+            instanciaItemId: z.coerce.number().int().positive(),
+            quantidade: z.coerce.number().int().positive(),
             observacao: z.string().max(400).nullish(),
             respostas: z
               .array(
                 z.object({
-                  campoFormularioId: z.coerce.number().positive(),
-                  opcoesIds: z.array(z.coerce.number().positive()).nullish(),
+                  campoFormularioId: z.coerce.number().int().positive(),
+                  opcoesIds: z
+                    .array(z.coerce.number().int().positive())
+                    .nullish(),
                   resposta: z.string().max(400).nullish(),
                 }),
               )

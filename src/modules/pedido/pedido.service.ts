@@ -10,6 +10,8 @@ import { FuncionarioService } from '../funcionario/funcionario.service';
 import { ItemPedidoService } from '../item-pedido/item-pedido.service';
 import { AppException, ExceptionType } from 'src/core/exception.core';
 import { Usuario } from '../usuario/usuario.entity';
+import { Cupom } from '../cupom/cupom.entity';
+import { CupomService } from '../cupom/cupom.service';
 
 @Injectable()
 export class PedidoService {
@@ -19,6 +21,7 @@ export class PedidoService {
     private readonly usuarioService: UsuarioService,
     private readonly funcionarioService: FuncionarioService,
     private readonly itemPedidoService: ItemPedidoService,
+    private readonly cupomService: CupomService,
   ) {}
 
   @Transaction()
@@ -26,12 +29,34 @@ export class PedidoService {
     usuarioEmail: string | undefined,
     data: Omit<CreatePedidoDTO, 'usuarioId'>,
   ): Promise<PedidoWithRelations> {
-    await this.restauranteService.getById(data.restauranteId);
+    const restaurante = await this.restauranteService.getById(
+      data.restauranteId,
+    );
 
     let usuario: Usuario | undefined = undefined;
+    let cupom: Cupom | undefined = undefined;
 
     if (usuarioEmail) {
       usuario = await this.usuarioService.getByEmail(usuarioEmail);
+
+      if (data.cupomId) {
+        cupom = await this.cupomService.getById(data.cupomId);
+
+        if (
+          cupom.qt_pedidos_feitos < cupom.qt_pedidos_total ||
+          cupom.usuario_id !== usuario.id
+        ) {
+          throw new AppException(
+            'Cupom não pode ser usado',
+            ExceptionType.INVALID_PARAMS,
+          );
+        }
+      } else {
+        await this.cupomService.addForRestauranteAndUsuario(
+          restaurante,
+          usuario,
+        );
+      }
     }
 
     const funcionarioResponsavel =
@@ -58,6 +83,7 @@ export class PedidoService {
       id: result.insertId,
       itens: itensPedido,
       funcionario_responsavel: funcionarioResponsavel || undefined,
+      cupom,
     };
   }
 

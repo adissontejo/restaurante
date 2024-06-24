@@ -1,4 +1,5 @@
 import { CampoFormularioWithRelations } from '../campo-formulario/campo-formulario.entity';
+import { Cupom } from '../cupom/cupom.entity';
 import { FuncionarioWithRelations } from '../funcionario/funcionario.entity';
 import { InstanciaItemWithRelations } from '../instancia-item/instancia-item.entity';
 import { ItemPedidoWithRelations } from '../item-pedido/item-pedido.entity';
@@ -16,6 +17,7 @@ export interface Pedido {
   nota_avaliacao?: number;
   observacao_avaliacao?: string;
   iniciado: boolean;
+  cupom_id?: number;
 }
 
 export interface PedidoWithRelations extends Pedido {
@@ -31,4 +33,5 @@ export interface PedidoWithRelations extends Pedido {
     })[];
   })[];
   funcionario_responsavel?: FuncionarioWithRelations;
+  cupom?: Cupom;
 }
